@@ -1,0 +1,132 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff
+instance/
+.webassets-cache
+
+# Scrapy stuff
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook / IPython
+.ipynb_checkpoints
+
+# pyenv
+#   For a library or package, you might want to ignore .python-version file, but for
+#   applications it is often desirable to check it in. See https://github.com/pyenv/pyenv#python-version
+.python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to checkin Pipfile.lock into version control.
+#   However, accelerated builds may cause issues if locks are out of sync.
+Pipfile.lock
+
+# Poetry
+#   Similar to Pipfile.lock, it is generally recommended to checkin poetry.lock into version control.
+poetry.lock
+
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to checkin pdm.lock into version control.
+pdm.lock
+.pdm.toml
+
+# PEP 582; used by e.g. hatch, PDM, and local virtual environments
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+# LaTeX explanation artifacts (kept out of version control)
+rqvae-vs-drq.tex
+rqvae-vs-drq.pdf
