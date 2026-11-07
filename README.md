@@ -37,8 +37,21 @@ finding, not a failed experiment.
 2. **Fix** by decoupling continuous geometry learning from discrete distribution
    matching (DRQ-style), so geometry can spread and assignment can flatten.
 
+## Arms (`train_drq_vs_rqvae.py`)
+
+- `rqvae` — joint baseline (RQ-VAE, STE, dead-code revival on, trunc-normal init).
+- `warmup` — 5 reconstruction-only epochs, then joint training with a cosine
+  restart (200-step handoff ramp). Isolates the latent-geometry phase as the
+  mechanism: sits between `rqvae` and `drq` on the coupling axis.
+- `drq` — separate training: continuous VAE, then hierarchical k-means on
+  frozen latents.
+
+Run one with `--arm all` (or per arm with the same `--run_name`); comparisons
+against the `rqvae` baseline are written to `comparison*.json`.
+
 ## Layout
 
+- `train_drq_vs_rqvae.py` — the three-arm injectivity experiment.
 - `references/rqvae_grid.py` — ablation-arm presets + diagnostics
   (`effective_cells`, `tuple_redundancy`, `utilisation_deficit`).
 - `references/train_rqvae_my_implementation.py` — self-contained RQ-VAE
