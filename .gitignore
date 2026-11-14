@@ -133,3 +133,6 @@ Thumbs.db
 archive/**/arm_*_index.json
 # run.log files are part of the shared results (per-epoch tables, recon values)
 !archive/**/*.log
+
+# kept local, not shared
+REFERENCES.md
