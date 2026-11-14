@@ -127,10 +127,9 @@ venv.bak/
 .Trashes
 ehthumbs.db
 Thumbs.db
-# LaTeX explanation artifacts (kept out of version control)
-rqvae-vs-drq.tex
-rqvae-vs-drq.pdf
-archive/
-
-project-brief.tex
-project-brief.pdf
+# Large run artifacts: the raw 126MB index JSONs stay local; their verified
+# gzip copies are tracked instead (GitHub blocks non-LFS files over 100MB).
+# gunzip -k arm_*_index.json.gz to restore byte-identical originals.
+archive/**/arm_*_index.json
+# run.log files are part of the shared results (per-epoch tables, recon values)
+!archive/**/*.log

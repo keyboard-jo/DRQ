@@ -1,0 +1,331 @@
+[2026-11-07 19:20:42] output dir: runs/sid_3x1024_baseline
+[2026-11-07 19:20:42] Loading parquet: /scratch/mscbdtspod2026/jksulaiman/data/item_embeddings.parquet
+[2026-11-07 19:21:13]   loaded 4783154 items, embedding dim 256 (30.75s)
+[2026-11-07 19:21:13] split: train=4304839 val=478315
+[2026-11-07 19:21:13] === Arm 1: baseline RQ-VAE (joint training) ===
+[2026-11-07 19:21:17]   dead-code revival ENABLED: every 500 steps, < 10.0% of mean usage, until 60% of steps
+[2026-11-07 19:21:19]     [RQVAE] epoch 1/25 step 100 loss=1.5856 cb=0.2939 cm=0.2939 perp0=1.0 perpL=1.0 lr=2.50e-05
+[2026-11-07 19:21:21]     [RQVAE] epoch 1/25 step 200 loss=1.0056 cb=0.0540 cm=0.0540 perp0=1.0 perpL=1.0 lr=5.00e-05
+[2026-11-07 19:21:23]     [RQVAE] epoch 1/25 step 300 loss=0.9425 cb=0.0245 cm=0.0245 perp0=1.0 perpL=1.7 lr=7.50e-05
+[2026-11-07 19:21:25]     [RQVAE] epoch 1/25 step 400 loss=0.9276 cb=0.1174 cm=0.1174 perp0=4.2 perpL=16.4 lr=1.00e-04
+[2026-11-07 19:21:26]     [dead-code] step 500: revived 2980 code(s)
+[2026-11-07 19:21:26]     [RQVAE] epoch 1/25 step 500 loss=0.7305 cb=0.1062 cm=0.1062 perp0=7.5 perpL=34.4 lr=1.25e-04
+[2026-11-07 19:21:28]     [RQVAE] epoch 1/25 step 600 loss=0.4880 cb=0.0687 cm=0.0687 perp0=570.8 perpL=377.6 lr=1.50e-04
+[2026-11-07 19:21:29]     [RQVAE] epoch 1/25 step 700 loss=0.4066 cb=0.0841 cm=0.0841 perp0=637.1 perpL=561.1 lr=1.75e-04
+[2026-11-07 19:21:31]     [RQVAE] epoch 1/25 step 800 loss=0.4101 cb=0.1291 cm=0.1291 perp0=651.4 perpL=703.4 lr=2.00e-04
+[2026-11-07 19:21:32]     [RQVAE] epoch 1/25 step 900 loss=0.4135 cb=0.1642 cm=0.1642 perp0=677.2 perpL=791.6 lr=2.25e-04
+[2026-11-07 19:21:34]     [dead-code] step 1000: revived 194 code(s)
+[2026-11-07 19:21:34]     [RQVAE] epoch 1/25 step 1000 loss=0.4308 cb=0.2061 cm=0.2061 perp0=684.7 perpL=849.7 lr=2.50e-04
+[2026-11-07 19:21:35]   [RQVAE] epoch 1/25 loss=0.7885 recon=0.6370 cb=0.1376 cm=0.1376 val_recon=0.1646 revived_total=3174 (18.7s)
+[2026-11-07 19:21:36]     [RQVAE] epoch 2/25 step 1100 loss=0.4570 cb=0.2457 cm=0.2457 perp0=785.5 perpL=881.7 lr=2.75e-04
+[2026-11-07 19:21:38]     [RQVAE] epoch 2/25 step 1200 loss=0.4846 cb=0.2862 cm=0.2862 perp0=792.6 perpL=892.6 lr=3.00e-04
+[2026-11-07 19:21:39]     [RQVAE] epoch 2/25 step 1300 loss=0.5233 cb=0.3352 cm=0.3352 perp0=799.0 perpL=883.0 lr=3.25e-04
+[2026-11-07 19:21:40]     [RQVAE] epoch 2/25 step 1400 loss=0.5584 cb=0.3789 cm=0.3789 perp0=801.9 perpL=868.7 lr=3.50e-04
+[2026-11-07 19:21:41]     [dead-code] step 1500: revived 17 code(s)
+[2026-11-07 19:21:41]     [RQVAE] epoch 2/25 step 1500 loss=0.6032 cb=0.4286 cm=0.4286 perp0=808.7 perpL=878.0 lr=3.75e-04
+[2026-11-07 19:21:43]     [RQVAE] epoch 2/25 step 1600 loss=0.6269 cb=0.4577 cm=0.4577 perp0=811.3 perpL=851.1 lr=4.00e-04
+[2026-11-07 19:21:44]     [RQVAE] epoch 2/25 step 1700 loss=0.6468 cb=0.4819 cm=0.4819 perp0=832.3 perpL=872.2 lr=4.25e-04
+[2026-11-07 19:21:46]     [RQVAE] epoch 2/25 step 1800 loss=0.6741 cb=0.5098 cm=0.5098 perp0=837.1 perpL=856.5 lr=4.50e-04
+[2026-11-07 19:21:47]     [RQVAE] epoch 2/25 step 1900 loss=0.6866 cb=0.5255 cm=0.5255 perp0=824.0 perpL=864.3 lr=4.75e-04
+[2026-11-07 19:21:48]     [RQVAE] epoch 2/25 step 2000 loss=0.7234 cb=0.5596 cm=0.5596 perp0=830.2 perpL=862.6 lr=5.00e-04
+[2026-11-07 19:21:50]     [RQVAE] epoch 2/25 step 2100 loss=0.7208 cb=0.5597 cm=0.5597 perp0=835.7 perpL=841.2 lr=5.00e-04
+[2026-11-07 19:21:51]   [RQVAE] epoch 2/25 loss=0.6052 recon=0.1344 cb=0.4280 cm=0.4280 val_recon=0.0472 revived_total=3191 (15.2s)
+[2026-11-07 19:21:52]     [RQVAE] epoch 3/25 step 2200 loss=0.7247 cb=0.5662 cm=0.5662 perp0=844.6 perpL=858.0 lr=5.00e-04
+[2026-11-07 19:21:54]     [RQVAE] epoch 3/25 step 2300 loss=0.7358 cb=0.5764 cm=0.5764 perp0=833.2 perpL=855.6 lr=5.00e-04
+[2026-11-07 19:21:55]     [RQVAE] epoch 3/25 step 2400 loss=0.7468 cb=0.5876 cm=0.5876 perp0=831.1 perpL=851.0 lr=5.00e-04
+[2026-11-07 19:21:56]     [RQVAE] epoch 3/25 step 2500 loss=0.7457 cb=0.5883 cm=0.5883 perp0=836.9 perpL=852.4 lr=4.99e-04
+[2026-11-07 19:21:58]     [RQVAE] epoch 3/25 step 2600 loss=0.7599 cb=0.6008 cm=0.6008 perp0=827.9 perpL=850.9 lr=4.99e-04
+[2026-11-07 19:21:59]     [RQVAE] epoch 3/25 step 2700 loss=0.7501 cb=0.5935 cm=0.5935 perp0=830.1 perpL=847.6 lr=4.99e-04
+[2026-11-07 19:22:00]     [RQVAE] epoch 3/25 step 2800 loss=0.7586 cb=0.6022 cm=0.6022 perp0=837.8 perpL=847.1 lr=4.99e-04
+[2026-11-07 19:22:02]     [RQVAE] epoch 3/25 step 2900 loss=0.7642 cb=0.6076 cm=0.6076 perp0=832.5 perpL=851.5 lr=4.98e-04
+[2026-11-07 19:22:03]     [RQVAE] epoch 3/25 step 3000 loss=0.7667 cb=0.6101 cm=0.6101 perp0=821.5 perpL=841.4 lr=4.98e-04
+[2026-11-07 19:22:04]     [RQVAE] epoch 3/25 step 3100 loss=0.7609 cb=0.6066 cm=0.6066 perp0=833.2 perpL=859.0 lr=4.97e-04
+[2026-11-07 19:22:06]   [RQVAE] epoch 3/25 loss=0.7484 recon=0.0981 cb=0.5912 cm=0.5912 val_recon=0.0354 revived_total=3191 (15.6s)
+[2026-11-07 19:22:07]     [RQVAE] epoch 4/25 step 3200 loss=0.7713 cb=0.6155 cm=0.6155 perp0=822.6 perpL=854.6 lr=4.97e-04
+[2026-11-07 19:22:09]     [RQVAE] epoch 4/25 step 3300 loss=0.7693 cb=0.6128 cm=0.6128 perp0=832.6 perpL=841.1 lr=4.96e-04
+[2026-11-07 19:22:10]     [RQVAE] epoch 4/25 step 3400 loss=0.7716 cb=0.6163 cm=0.6163 perp0=839.6 perpL=860.2 lr=4.96e-04
+[2026-11-07 19:22:11]     [RQVAE] epoch 4/25 step 3500 loss=0.7576 cb=0.6056 cm=0.6056 perp0=836.5 perpL=851.5 lr=4.95e-04
+[2026-11-07 19:22:13]     [RQVAE] epoch 4/25 step 3600 loss=0.7712 cb=0.6173 cm=0.6173 perp0=841.7 perpL=847.3 lr=4.95e-04
+[2026-11-07 19:22:14]     [RQVAE] epoch 4/25 step 3700 loss=0.7844 cb=0.6279 cm=0.6279 perp0=842.0 perpL=850.6 lr=4.94e-04
+[2026-11-07 19:22:15]     [RQVAE] epoch 4/25 step 3800 loss=0.7760 cb=0.6217 cm=0.6217 perp0=834.8 perpL=841.0 lr=4.93e-04
+[2026-11-07 19:22:17]     [RQVAE] epoch 4/25 step 3900 loss=0.7679 cb=0.6155 cm=0.6155 perp0=814.5 perpL=832.6 lr=4.92e-04
+[2026-11-07 19:22:18]     [RQVAE] epoch 4/25 step 4000 loss=0.7725 cb=0.6192 cm=0.6192 perp0=833.2 perpL=847.0 lr=4.92e-04
+[2026-11-07 19:22:19]     [RQVAE] epoch 4/25 step 4100 loss=0.7835 cb=0.6284 cm=0.6284 perp0=828.0 perpL=854.9 lr=4.91e-04
+[2026-11-07 19:22:21]     [RQVAE] epoch 4/25 step 4200 loss=0.7714 cb=0.6190 cm=0.6190 perp0=830.3 perpL=830.7 lr=4.90e-04
+[2026-11-07 19:22:22]   [RQVAE] epoch 4/25 loss=0.7697 recon=0.0925 cb=0.6157 cm=0.6157 val_recon=0.0306 revived_total=3191 (15.6s)
+[2026-11-07 19:22:23]     [RQVAE] epoch 5/25 step 4300 loss=0.7790 cb=0.6252 cm=0.6252 perp0=837.2 perpL=838.9 lr=4.89e-04
+[2026-11-07 19:22:25]     [RQVAE] epoch 5/25 step 4400 loss=0.7788 cb=0.6254 cm=0.6254 perp0=829.1 perpL=855.6 lr=4.88e-04
+[2026-11-07 19:22:26]     [RQVAE] epoch 5/25 step 4500 loss=0.7763 cb=0.6236 cm=0.6236 perp0=847.0 perpL=837.0 lr=4.87e-04
+[2026-11-07 19:22:27]     [RQVAE] epoch 5/25 step 4600 loss=0.7772 cb=0.6250 cm=0.6250 perp0=844.2 perpL=844.7 lr=4.86e-04
+[2026-11-07 19:22:28]     [RQVAE] epoch 5/25 step 4700 loss=0.7822 cb=0.6283 cm=0.6283 perp0=827.4 perpL=844.4 lr=4.85e-04
+[2026-11-07 19:22:30]     [RQVAE] epoch 5/25 step 4800 loss=0.7714 cb=0.6204 cm=0.6204 perp0=834.1 perpL=847.6 lr=4.84e-04
+[2026-11-07 19:22:31]     [RQVAE] epoch 5/25 step 4900 loss=0.7850 cb=0.6315 cm=0.6315 perp0=835.8 perpL=827.5 lr=4.83e-04
+[2026-11-07 19:22:33]     [dead-code] step 5000: revived 1 code(s)
+[2026-11-07 19:22:33]     [RQVAE] epoch 5/25 step 5000 loss=0.7704 cb=0.6203 cm=0.6203 perp0=824.3 perpL=841.3 lr=4.81e-04
+[2026-11-07 19:22:34]     [RQVAE] epoch 5/25 step 5100 loss=0.7874 cb=0.6330 cm=0.6330 perp0=836.5 perpL=843.5 lr=4.80e-04
+[2026-11-07 19:22:35]     [RQVAE] epoch 5/25 step 5200 loss=0.7830 cb=0.6311 cm=0.6311 perp0=818.8 perpL=840.9 lr=4.79e-04
+[2026-11-07 19:22:37]   [RQVAE] epoch 5/25 loss=0.7789 recon=0.0900 cb=0.6262 cm=0.6262 val_recon=0.0284 revived_total=3192 (15.1s)
+[2026-11-07 19:22:38]     [RQVAE] epoch 6/25 step 5300 loss=0.7715 cb=0.6212 cm=0.6212 perp0=835.1 perpL=838.1 lr=4.77e-04
+[2026-11-07 19:22:39]     [RQVAE] epoch 6/25 step 5400 loss=0.7818 cb=0.6296 cm=0.6296 perp0=827.9 perpL=847.0 lr=4.76e-04
+[2026-11-07 19:22:40]     [RQVAE] epoch 6/25 step 5500 loss=0.7959 cb=0.6418 cm=0.6418 perp0=838.0 perpL=857.2 lr=4.75e-04
+[2026-11-07 19:22:42]     [RQVAE] epoch 6/25 step 5600 loss=0.7872 cb=0.6344 cm=0.6344 perp0=825.9 perpL=837.9 lr=4.73e-04
+[2026-11-07 19:22:43]     [RQVAE] epoch 6/25 step 5700 loss=0.7900 cb=0.6368 cm=0.6368 perp0=816.0 perpL=848.0 lr=4.72e-04
+[2026-11-07 19:22:45]     [RQVAE] epoch 6/25 step 5800 loss=0.7784 cb=0.6282 cm=0.6282 perp0=834.0 perpL=853.2 lr=4.70e-04
+[2026-11-07 19:22:46]     [RQVAE] epoch 6/25 step 5900 loss=0.7831 cb=0.6322 cm=0.6322 perp0=822.1 perpL=839.3 lr=4.69e-04
+[2026-11-07 19:22:47]     [RQVAE] epoch 6/25 step 6000 loss=0.7861 cb=0.6344 cm=0.6344 perp0=845.3 perpL=847.3 lr=4.67e-04
+[2026-11-07 19:22:49]     [RQVAE] epoch 6/25 step 6100 loss=0.7795 cb=0.6293 cm=0.6293 perp0=836.8 perpL=829.7 lr=4.66e-04
+[2026-11-07 19:22:50]     [RQVAE] epoch 6/25 step 6200 loss=0.7985 cb=0.6450 cm=0.6450 perp0=837.1 perpL=845.9 lr=4.64e-04
+[2026-11-07 19:22:51]     [RQVAE] epoch 6/25 step 6300 loss=0.7814 cb=0.6316 cm=0.6316 perp0=832.5 perpL=835.0 lr=4.62e-04
+[2026-11-07 19:22:53]   [RQVAE] epoch 6/25 loss=0.7855 recon=0.0884 cb=0.6338 cm=0.6338 val_recon=0.0256 revived_total=3192 (15.6s)
+[2026-11-07 19:22:54]     [RQVAE] epoch 7/25 step 6400 loss=0.7956 cb=0.6423 cm=0.6423 perp0=843.8 perpL=848.5 lr=4.60e-04
+[2026-11-07 19:22:55]     [dead-code] step 6500: revived 1 code(s)
+[2026-11-07 19:22:55]     [RQVAE] epoch 7/25 step 6500 loss=0.7874 cb=0.6364 cm=0.6364 perp0=832.3 perpL=851.9 lr=4.59e-04
+[2026-11-07 19:22:57]     [RQVAE] epoch 7/25 step 6600 loss=0.7919 cb=0.6402 cm=0.6402 perp0=841.5 perpL=853.6 lr=4.57e-04
+[2026-11-07 19:22:58]     [RQVAE] epoch 7/25 step 6700 loss=0.7913 cb=0.6402 cm=0.6402 perp0=838.3 perpL=858.5 lr=4.55e-04
+[2026-11-07 19:23:00]     [RQVAE] epoch 7/25 step 6800 loss=0.7916 cb=0.6405 cm=0.6405 perp0=821.7 perpL=832.5 lr=4.53e-04
+[2026-11-07 19:23:01]     [RQVAE] epoch 7/25 step 6900 loss=0.7941 cb=0.6421 cm=0.6421 perp0=827.2 perpL=841.3 lr=4.51e-04
+[2026-11-07 19:23:02]     [RQVAE] epoch 7/25 step 7000 loss=0.7980 cb=0.6458 cm=0.6458 perp0=831.3 perpL=849.2 lr=4.49e-04
+[2026-11-07 19:23:04]     [RQVAE] epoch 7/25 step 7100 loss=0.7918 cb=0.6409 cm=0.6409 perp0=831.6 perpL=845.8 lr=4.47e-04
+[2026-11-07 19:23:05]     [RQVAE] epoch 7/25 step 7200 loss=0.7908 cb=0.6405 cm=0.6405 perp0=833.2 perpL=845.9 lr=4.45e-04
+[2026-11-07 19:23:07]     [RQVAE] epoch 7/25 step 7300 loss=0.8015 cb=0.6493 cm=0.6493 perp0=825.9 perpL=848.7 lr=4.43e-04
+[2026-11-07 19:23:08]   [RQVAE] epoch 7/25 loss=0.7914 recon=0.0873 cb=0.6401 cm=0.6401 val_recon=0.0247 revived_total=3193 (15.9s)
+[2026-11-07 19:23:09]     [RQVAE] epoch 8/25 step 7400 loss=0.7897 cb=0.6393 cm=0.6393 perp0=821.6 perpL=847.9 lr=4.41e-04
+[2026-11-07 19:23:11]     [dead-code] step 7500: revived 1 code(s)
+[2026-11-07 19:23:11]     [RQVAE] epoch 8/25 step 7500 loss=0.7896 cb=0.6394 cm=0.6394 perp0=841.0 perpL=835.8 lr=4.39e-04
+[2026-11-07 19:23:12]     [RQVAE] epoch 8/25 step 7600 loss=0.7956 cb=0.6439 cm=0.6439 perp0=828.8 perpL=841.8 lr=4.37e-04
+[2026-11-07 19:23:14]     [RQVAE] epoch 8/25 step 7700 loss=0.8006 cb=0.6478 cm=0.6478 perp0=847.7 perpL=861.6 lr=4.35e-04
+[2026-11-07 19:23:15]     [RQVAE] epoch 8/25 step 7800 loss=0.7952 cb=0.6441 cm=0.6441 perp0=837.5 perpL=851.1 lr=4.33e-04
+[2026-11-07 19:23:16]     [RQVAE] epoch 8/25 step 7900 loss=0.7983 cb=0.6469 cm=0.6469 perp0=834.3 perpL=851.0 lr=4.30e-04
+[2026-11-07 19:23:18]     [RQVAE] epoch 8/25 step 8000 loss=0.7960 cb=0.6446 cm=0.6446 perp0=823.6 perpL=846.0 lr=4.28e-04
+[2026-11-07 19:23:19]     [RQVAE] epoch 8/25 step 8100 loss=0.7919 cb=0.6421 cm=0.6421 perp0=831.2 perpL=859.4 lr=4.26e-04
+[2026-11-07 19:23:20]     [RQVAE] epoch 8/25 step 8200 loss=0.7951 cb=0.6451 cm=0.6451 perp0=830.7 perpL=844.1 lr=4.24e-04
+[2026-11-07 19:23:22]     [RQVAE] epoch 8/25 step 8300 loss=0.8081 cb=0.6555 cm=0.6555 perp0=833.5 perpL=846.4 lr=4.21e-04
+[2026-11-07 19:23:23]     [RQVAE] epoch 8/25 step 8400 loss=0.7925 cb=0.6424 cm=0.6424 perp0=839.9 perpL=847.1 lr=4.19e-04
+[2026-11-07 19:23:24]   [RQVAE] epoch 8/25 loss=0.7959 recon=0.0865 cb=0.6449 cm=0.6449 val_recon=0.0236 revived_total=3194 (15.6s)
+[2026-11-07 19:23:26]     [RQVAE] epoch 9/25 step 8500 loss=0.8023 cb=0.6511 cm=0.6511 perp0=832.2 perpL=856.2 lr=4.16e-04
+[2026-11-07 19:23:27]     [RQVAE] epoch 9/25 step 8600 loss=0.8052 cb=0.6532 cm=0.6532 perp0=834.4 perpL=838.3 lr=4.14e-04
+[2026-11-07 19:23:28]     [RQVAE] epoch 9/25 step 8700 loss=0.7946 cb=0.6449 cm=0.6449 perp0=831.8 perpL=829.4 lr=4.12e-04
+[2026-11-07 19:23:30]     [RQVAE] epoch 9/25 step 8800 loss=0.7942 cb=0.6442 cm=0.6442 perp0=829.0 perpL=842.2 lr=4.09e-04
+[2026-11-07 19:23:31]     [RQVAE] epoch 9/25 step 8900 loss=0.8082 cb=0.6555 cm=0.6555 perp0=834.1 perpL=861.7 lr=4.07e-04
+[2026-11-07 19:23:32]     [dead-code] step 9000: revived 1 code(s)
+[2026-11-07 19:23:32]     [RQVAE] epoch 9/25 step 9000 loss=0.7947 cb=0.6449 cm=0.6449 perp0=815.2 perpL=847.0 lr=4.04e-04
+[2026-11-07 19:23:34]     [RQVAE] epoch 9/25 step 9100 loss=0.7953 cb=0.6454 cm=0.6454 perp0=828.2 perpL=828.8 lr=4.01e-04
+[2026-11-07 19:23:35]     [RQVAE] epoch 9/25 step 9200 loss=0.8024 cb=0.6522 cm=0.6522 perp0=829.5 perpL=832.5 lr=3.99e-04
+[2026-11-07 19:23:36]     [RQVAE] epoch 9/25 step 9300 loss=0.8047 cb=0.6531 cm=0.6531 perp0=842.8 perpL=840.3 lr=3.96e-04
+[2026-11-07 19:23:38]     [RQVAE] epoch 9/25 step 9400 loss=0.8044 cb=0.6533 cm=0.6533 perp0=837.4 perpL=850.2 lr=3.94e-04
+[2026-11-07 19:23:40]   [RQVAE] epoch 9/25 loss=0.7994 recon=0.0858 cb=0.6487 cm=0.6487 val_recon=0.0227 revived_total=3195 (15.4s)
+[2026-11-07 19:23:40]     [RQVAE] epoch 10/25 step 9500 loss=0.7992 cb=0.6491 cm=0.6491 perp0=835.1 perpL=854.3 lr=3.91e-04
+[2026-11-07 19:23:42]     [RQVAE] epoch 10/25 step 9600 loss=0.8039 cb=0.6533 cm=0.6533 perp0=818.7 perpL=845.5 lr=3.88e-04
+[2026-11-07 19:23:43]     [RQVAE] epoch 10/25 step 9700 loss=0.7999 cb=0.6499 cm=0.6499 perp0=832.3 perpL=830.3 lr=3.86e-04
+[2026-11-07 19:23:44]     [RQVAE] epoch 10/25 step 9800 loss=0.8074 cb=0.6559 cm=0.6559 perp0=831.2 perpL=841.3 lr=3.83e-04
+[2026-11-07 19:23:46]     [RQVAE] epoch 10/25 step 9900 loss=0.8161 cb=0.6632 cm=0.6632 perp0=831.5 perpL=854.5 lr=3.80e-04
+[2026-11-07 19:23:47]     [RQVAE] epoch 10/25 step 10000 loss=0.8035 cb=0.6526 cm=0.6526 perp0=826.5 perpL=847.9 lr=3.77e-04
+[2026-11-07 19:23:48]     [RQVAE] epoch 10/25 step 10100 loss=0.8033 cb=0.6526 cm=0.6526 perp0=834.1 perpL=848.6 lr=3.75e-04
+[2026-11-07 19:23:50]     [RQVAE] epoch 10/25 step 10200 loss=0.8090 cb=0.6575 cm=0.6575 perp0=843.6 perpL=851.6 lr=3.72e-04
+[2026-11-07 19:23:51]     [RQVAE] epoch 10/25 step 10300 loss=0.8106 cb=0.6589 cm=0.6589 perp0=827.0 perpL=854.4 lr=3.69e-04
+[2026-11-07 19:23:52]     [RQVAE] epoch 10/25 step 10400 loss=0.8105 cb=0.6590 cm=0.6590 perp0=831.9 perpL=834.4 lr=3.66e-04
+[2026-11-07 19:23:54]     [RQVAE] epoch 10/25 step 10500 loss=0.8062 cb=0.6554 cm=0.6554 perp0=827.2 perpL=833.5 lr=3.63e-04
+[2026-11-07 19:23:55]   [RQVAE] epoch 10/25 loss=0.8025 recon=0.0853 cb=0.6520 cm=0.6520 val_recon=0.0219 revived_total=3195 (15.3s)
+[2026-11-07 19:23:57]     [RQVAE] epoch 11/25 step 10600 loss=0.8115 cb=0.6604 cm=0.6604 perp0=840.9 perpL=839.1 lr=3.60e-04
+[2026-11-07 19:23:58]     [RQVAE] epoch 11/25 step 10700 loss=0.8101 cb=0.6587 cm=0.6587 perp0=841.3 perpL=837.7 lr=3.57e-04
+[2026-11-07 19:23:59]     [RQVAE] epoch 11/25 step 10800 loss=0.8096 cb=0.6581 cm=0.6581 perp0=842.3 perpL=825.5 lr=3.54e-04
+[2026-11-07 19:24:01]     [RQVAE] epoch 11/25 step 10900 loss=0.8145 cb=0.6624 cm=0.6624 perp0=839.4 perpL=840.9 lr=3.51e-04
+[2026-11-07 19:24:02]     [RQVAE] epoch 11/25 step 11000 loss=0.8083 cb=0.6575 cm=0.6575 perp0=830.4 perpL=846.3 lr=3.48e-04
+[2026-11-07 19:24:04]     [RQVAE] epoch 11/25 step 11100 loss=0.8068 cb=0.6565 cm=0.6565 perp0=828.1 perpL=830.2 lr=3.45e-04
+[2026-11-07 19:24:05]     [RQVAE] epoch 11/25 step 11200 loss=0.8119 cb=0.6606 cm=0.6606 perp0=843.9 perpL=839.6 lr=3.42e-04
+[2026-11-07 19:24:06]     [RQVAE] epoch 11/25 step 11300 loss=0.8054 cb=0.6554 cm=0.6554 perp0=837.8 perpL=849.5 lr=3.39e-04
+[2026-11-07 19:24:08]     [RQVAE] epoch 11/25 step 11400 loss=0.8097 cb=0.6591 cm=0.6591 perp0=833.3 perpL=847.4 lr=3.36e-04
+[2026-11-07 19:24:09]     [RQVAE] epoch 11/25 step 11500 loss=0.8104 cb=0.6590 cm=0.6590 perp0=828.2 perpL=842.0 lr=3.33e-04
+[2026-11-07 19:24:11]   [RQVAE] epoch 11/25 loss=0.8052 recon=0.0849 cb=0.6549 cm=0.6549 val_recon=0.0213 revived_total=3195 (16.3s)
+[2026-11-07 19:24:12]     [RQVAE] epoch 12/25 step 11600 loss=0.8051 cb=0.6545 cm=0.6545 perp0=826.0 perpL=845.5 lr=3.30e-04
+[2026-11-07 19:24:14]     [RQVAE] epoch 12/25 step 11700 loss=0.7999 cb=0.6506 cm=0.6506 perp0=850.9 perpL=833.2 lr=3.27e-04
+[2026-11-07 19:24:15]     [RQVAE] epoch 12/25 step 11800 loss=0.8077 cb=0.6573 cm=0.6573 perp0=829.2 perpL=850.2 lr=3.24e-04
+[2026-11-07 19:24:16]     [RQVAE] epoch 12/25 step 11900 loss=0.8112 cb=0.6602 cm=0.6602 perp0=826.1 perpL=842.8 lr=3.21e-04
+[2026-11-07 19:24:18]     [dead-code] step 12000: revived 1 code(s)
+[2026-11-07 19:24:18]     [RQVAE] epoch 12/25 step 12000 loss=0.7962 cb=0.6479 cm=0.6479 perp0=813.3 perpL=840.3 lr=3.18e-04
+[2026-11-07 19:24:19]     [RQVAE] epoch 12/25 step 12100 loss=0.8056 cb=0.6563 cm=0.6563 perp0=837.0 perpL=839.2 lr=3.15e-04
+[2026-11-07 19:24:20]     [RQVAE] epoch 12/25 step 12200 loss=0.8063 cb=0.6569 cm=0.6569 perp0=825.4 perpL=841.5 lr=3.12e-04
+[2026-11-07 19:24:22]     [RQVAE] epoch 12/25 step 12300 loss=0.8018 cb=0.6528 cm=0.6528 perp0=832.9 perpL=833.0 lr=3.09e-04
+[2026-11-07 19:24:23]     [RQVAE] epoch 12/25 step 12400 loss=0.8079 cb=0.6582 cm=0.6582 perp0=834.9 perpL=835.5 lr=3.05e-04
+[2026-11-07 19:24:24]     [dead-code] step 12500: revived 1 code(s)
+[2026-11-07 19:24:24]     [RQVAE] epoch 12/25 step 12500 loss=0.8081 cb=0.6577 cm=0.6577 perp0=830.5 perpL=837.5 lr=3.02e-04
+[2026-11-07 19:24:26]     [RQVAE] epoch 12/25 step 12600 loss=0.8108 cb=0.6602 cm=0.6602 perp0=827.8 perpL=845.5 lr=2.99e-04
+[2026-11-07 19:24:27]   [RQVAE] epoch 12/25 loss=0.8076 recon=0.0845 cb=0.6574 cm=0.6574 val_recon=0.0207 revived_total=3197 (15.5s)
+[2026-11-07 19:24:28]     [RQVAE] epoch 13/25 step 12700 loss=0.8020 cb=0.6529 cm=0.6529 perp0=828.4 perpL=845.9 lr=2.96e-04
+[2026-11-07 19:24:30]     [RQVAE] epoch 13/25 step 12800 loss=0.8160 cb=0.6647 cm=0.6647 perp0=821.1 perpL=844.1 lr=2.93e-04
+[2026-11-07 19:24:31]     [RQVAE] epoch 13/25 step 12900 loss=0.8144 cb=0.6634 cm=0.6634 perp0=832.3 perpL=841.9 lr=2.90e-04
+[2026-11-07 19:24:32]     [RQVAE] epoch 13/25 step 13000 loss=0.8143 cb=0.6633 cm=0.6633 perp0=835.6 perpL=843.3 lr=2.86e-04
+[2026-11-07 19:24:34]     [RQVAE] epoch 13/25 step 13100 loss=0.8016 cb=0.6529 cm=0.6529 perp0=834.1 perpL=837.1 lr=2.83e-04
+[2026-11-07 19:24:35]     [RQVAE] epoch 13/25 step 13200 loss=0.7964 cb=0.6489 cm=0.6489 perp0=839.8 perpL=834.5 lr=2.80e-04
+[2026-11-07 19:24:37]     [RQVAE] epoch 13/25 step 13300 loss=0.8174 cb=0.6657 cm=0.6657 perp0=825.2 perpL=833.5 lr=2.77e-04
+[2026-11-07 19:24:38]     [RQVAE] epoch 13/25 step 13400 loss=0.8074 cb=0.6579 cm=0.6579 perp0=829.2 perpL=847.6 lr=2.73e-04
+[2026-11-07 19:24:39]     [RQVAE] epoch 13/25 step 13500 loss=0.8111 cb=0.6611 cm=0.6611 perp0=834.7 perpL=840.3 lr=2.70e-04
+[2026-11-07 19:24:41]     [RQVAE] epoch 13/25 step 13600 loss=0.8121 cb=0.6618 cm=0.6618 perp0=834.5 perpL=845.7 lr=2.67e-04
+[2026-11-07 19:24:43]   [RQVAE] epoch 13/25 loss=0.8091 recon=0.0841 cb=0.6591 cm=0.6591 val_recon=0.0203 revived_total=3197 (16.0s)
+[2026-11-07 19:24:43]     [RQVAE] epoch 14/25 step 13700 loss=0.8035 cb=0.6546 cm=0.6546 perp0=826.5 perpL=836.2 lr=2.64e-04
+[2026-11-07 19:24:45]     [RQVAE] epoch 14/25 step 13800 loss=0.8156 cb=0.6648 cm=0.6648 perp0=843.4 perpL=835.2 lr=2.61e-04
+[2026-11-07 19:24:46]     [RQVAE] epoch 14/25 step 13900 loss=0.8011 cb=0.6528 cm=0.6528 perp0=839.6 perpL=840.6 lr=2.57e-04
+[2026-11-07 19:24:47]     [RQVAE] epoch 14/25 step 14000 loss=0.8104 cb=0.6602 cm=0.6602 perp0=818.6 perpL=841.3 lr=2.54e-04
+[2026-11-07 19:24:49]     [RQVAE] epoch 14/25 step 14100 loss=0.8100 cb=0.6600 cm=0.6600 perp0=836.0 perpL=841.2 lr=2.51e-04
+[2026-11-07 19:24:50]     [RQVAE] epoch 14/25 step 14200 loss=0.8156 cb=0.6647 cm=0.6647 perp0=852.2 perpL=852.1 lr=2.48e-04
+[2026-11-07 19:24:52]     [RQVAE] epoch 14/25 step 14300 loss=0.8108 cb=0.6608 cm=0.6608 perp0=841.5 perpL=836.6 lr=2.44e-04
+[2026-11-07 19:24:53]     [RQVAE] epoch 14/25 step 14400 loss=0.8162 cb=0.6655 cm=0.6655 perp0=831.2 perpL=855.5 lr=2.41e-04
+[2026-11-07 19:24:54]     [RQVAE] epoch 14/25 step 14500 loss=0.8143 cb=0.6643 cm=0.6643 perp0=828.1 perpL=844.7 lr=2.38e-04
+[2026-11-07 19:24:56]     [RQVAE] epoch 14/25 step 14600 loss=0.8115 cb=0.6615 cm=0.6615 perp0=838.7 perpL=844.0 lr=2.35e-04
+[2026-11-07 19:24:57]     [RQVAE] epoch 14/25 step 14700 loss=0.8179 cb=0.6665 cm=0.6665 perp0=822.9 perpL=846.9 lr=2.31e-04
+[2026-11-07 19:24:58]   [RQVAE] epoch 14/25 loss=0.8102 recon=0.0838 cb=0.6604 cm=0.6604 val_recon=0.0201 revived_total=3197 (15.8s)
+[2026-11-07 19:25:00]     [RQVAE] epoch 15/25 step 14800 loss=0.8071 cb=0.6581 cm=0.6581 perp0=835.1 perpL=838.8 lr=2.28e-04
+[2026-11-07 19:25:01]     [RQVAE] epoch 15/25 step 14900 loss=0.8148 cb=0.6641 cm=0.6641 perp0=819.6 perpL=844.7 lr=2.25e-04
+[2026-11-07 19:25:03]     [RQVAE] epoch 15/25 step 15000 loss=0.8006 cb=0.6529 cm=0.6529 perp0=833.6 perpL=831.2 lr=2.22e-04
+[2026-11-07 19:25:04]     [RQVAE] epoch 15/25 step 15100 loss=0.8098 cb=0.6600 cm=0.6600 perp0=832.6 perpL=834.2 lr=2.19e-04
+[2026-11-07 19:25:05]     [RQVAE] epoch 15/25 step 15200 loss=0.8054 cb=0.6568 cm=0.6568 perp0=825.5 perpL=847.5 lr=2.15e-04
+[2026-11-07 19:25:07]     [RQVAE] epoch 15/25 step 15300 loss=0.8016 cb=0.6537 cm=0.6537 perp0=837.3 perpL=842.8 lr=2.12e-04
+[2026-11-07 19:25:08]     [RQVAE] epoch 15/25 step 15400 loss=0.7975 cb=0.6506 cm=0.6506 perp0=824.2 perpL=836.3 lr=2.09e-04
+[2026-11-07 19:25:10]     [RQVAE] epoch 15/25 step 15500 loss=0.8207 cb=0.6696 cm=0.6696 perp0=834.7 perpL=852.0 lr=2.06e-04
+[2026-11-07 19:25:11]     [RQVAE] epoch 15/25 step 15600 loss=0.8076 cb=0.6589 cm=0.6589 perp0=841.5 perpL=826.8 lr=2.03e-04
+[2026-11-07 19:25:12]     [RQVAE] epoch 15/25 step 15700 loss=0.8162 cb=0.6660 cm=0.6660 perp0=837.7 perpL=838.0 lr=1.99e-04
+[2026-11-07 19:25:14]   [RQVAE] epoch 15/25 loss=0.8114 recon=0.0835 cb=0.6617 cm=0.6617 val_recon=0.0194 revived_total=3197 (15.9s)
+[2026-11-07 19:25:15]     [RQVAE] epoch 16/25 step 15800 loss=0.8114 cb=0.6617 cm=0.6617 perp0=836.0 perpL=834.4 lr=1.96e-04
+[2026-11-07 19:25:17]     [RQVAE] epoch 16/25 step 15900 loss=0.7983 cb=0.6509 cm=0.6509 perp0=830.1 perpL=839.8 lr=1.93e-04
+[2026-11-07 19:25:18]     [RQVAE] epoch 16/25 step 16000 loss=0.8105 cb=0.6612 cm=0.6612 perp0=822.7 perpL=846.0 lr=1.90e-04
+[2026-11-07 19:25:20]     [RQVAE] epoch 16/25 step 16100 loss=0.8017 cb=0.6538 cm=0.6538 perp0=829.6 perpL=838.8 lr=1.87e-04
+[2026-11-07 19:25:21]     [RQVAE] epoch 16/25 step 16200 loss=0.8257 cb=0.6738 cm=0.6738 perp0=837.7 perpL=848.1 lr=1.84e-04
+[2026-11-07 19:25:22]     [RQVAE] epoch 16/25 step 16300 loss=0.8242 cb=0.6728 cm=0.6728 perp0=836.8 perpL=850.8 lr=1.80e-04
+[2026-11-07 19:25:24]     [RQVAE] epoch 16/25 step 16400 loss=0.8114 cb=0.6619 cm=0.6619 perp0=819.8 perpL=827.6 lr=1.77e-04
+[2026-11-07 19:25:25]     [RQVAE] epoch 16/25 step 16500 loss=0.8080 cb=0.6591 cm=0.6591 perp0=837.9 perpL=836.4 lr=1.74e-04
+[2026-11-07 19:25:26]     [RQVAE] epoch 16/25 step 16600 loss=0.8103 cb=0.6609 cm=0.6609 perp0=831.0 perpL=832.4 lr=1.71e-04
+[2026-11-07 19:25:28]     [RQVAE] epoch 16/25 step 16700 loss=0.8094 cb=0.6606 cm=0.6606 perp0=834.6 perpL=834.0 lr=1.68e-04
+[2026-11-07 19:25:29]     [RQVAE] epoch 16/25 step 16800 loss=0.7994 cb=0.6523 cm=0.6523 perp0=824.5 perpL=834.2 lr=1.65e-04
+[2026-11-07 19:25:30]   [RQVAE] epoch 16/25 loss=0.8118 recon=0.0833 cb=0.6623 cm=0.6623 val_recon=0.0190 revived_total=3197 (16.0s)
+[2026-11-07 19:25:32]     [RQVAE] epoch 17/25 step 16900 loss=0.8124 cb=0.6630 cm=0.6630 perp0=828.8 perpL=838.1 lr=1.62e-04
+[2026-11-07 19:25:33]     [RQVAE] epoch 17/25 step 17000 loss=0.8230 cb=0.6714 cm=0.6714 perp0=837.6 perpL=846.7 lr=1.59e-04
+[2026-11-07 19:25:35]     [RQVAE] epoch 17/25 step 17100 loss=0.8203 cb=0.6696 cm=0.6696 perp0=838.0 perpL=840.9 lr=1.56e-04
+[2026-11-07 19:25:36]     [RQVAE] epoch 17/25 step 17200 loss=0.8238 cb=0.6722 cm=0.6722 perp0=837.0 perpL=844.6 lr=1.53e-04
+[2026-11-07 19:25:38]     [RQVAE] epoch 17/25 step 17300 loss=0.8152 cb=0.6655 cm=0.6655 perp0=842.2 perpL=832.6 lr=1.50e-04
+[2026-11-07 19:25:39]     [RQVAE] epoch 17/25 step 17400 loss=0.8168 cb=0.6668 cm=0.6668 perp0=836.2 perpL=837.5 lr=1.47e-04
+[2026-11-07 19:25:40]     [RQVAE] epoch 17/25 step 17500 loss=0.8085 cb=0.6598 cm=0.6598 perp0=832.4 perpL=838.5 lr=1.44e-04
+[2026-11-07 19:25:42]     [RQVAE] epoch 17/25 step 17600 loss=0.7992 cb=0.6527 cm=0.6527 perp0=829.4 perpL=832.6 lr=1.41e-04
+[2026-11-07 19:25:43]     [RQVAE] epoch 17/25 step 17700 loss=0.8103 cb=0.6614 cm=0.6614 perp0=831.7 perpL=847.3 lr=1.38e-04
+[2026-11-07 19:25:44]     [RQVAE] epoch 17/25 step 17800 loss=0.8162 cb=0.6662 cm=0.6662 perp0=821.5 perpL=832.9 lr=1.35e-04
+[2026-11-07 19:25:46]   [RQVAE] epoch 17/25 loss=0.8124 recon=0.0830 cb=0.6630 cm=0.6630 val_recon=0.0191 revived_total=3197 (15.6s)
+[2026-11-07 19:25:47]     [RQVAE] epoch 18/25 step 17900 loss=0.8079 cb=0.6592 cm=0.6592 perp0=829.9 perpL=840.6 lr=1.33e-04
+[2026-11-07 19:25:48]     [RQVAE] epoch 18/25 step 18000 loss=0.8127 cb=0.6634 cm=0.6634 perp0=831.3 perpL=841.8 lr=1.30e-04
+[2026-11-07 19:25:49]     [RQVAE] epoch 18/25 step 18100 loss=0.8156 cb=0.6660 cm=0.6660 perp0=849.7 perpL=844.8 lr=1.27e-04
+[2026-11-07 19:25:51]     [RQVAE] epoch 18/25 step 18200 loss=0.8165 cb=0.6667 cm=0.6667 perp0=826.5 perpL=845.0 lr=1.24e-04
+[2026-11-07 19:25:52]     [RQVAE] epoch 18/25 step 18300 loss=0.8194 cb=0.6691 cm=0.6691 perp0=839.3 perpL=841.1 lr=1.21e-04
+[2026-11-07 19:25:53]     [RQVAE] epoch 18/25 step 18400 loss=0.8125 cb=0.6632 cm=0.6632 perp0=833.5 perpL=834.3 lr=1.19e-04
+[2026-11-07 19:25:55]     [RQVAE] epoch 18/25 step 18500 loss=0.7979 cb=0.6516 cm=0.6516 perp0=834.5 perpL=835.5 lr=1.16e-04
+[2026-11-07 19:25:56]     [RQVAE] epoch 18/25 step 18600 loss=0.8104 cb=0.6616 cm=0.6616 perp0=819.4 perpL=838.3 lr=1.13e-04
+[2026-11-07 19:25:57]     [RQVAE] epoch 18/25 step 18700 loss=0.8097 cb=0.6608 cm=0.6608 perp0=819.5 perpL=826.9 lr=1.10e-04
+[2026-11-07 19:25:58]     [RQVAE] epoch 18/25 step 18800 loss=0.8093 cb=0.6607 cm=0.6607 perp0=824.5 perpL=842.6 lr=1.08e-04
+[2026-11-07 19:26:00]     [RQVAE] epoch 18/25 step 18900 loss=0.8146 cb=0.6652 cm=0.6652 perp0=834.9 perpL=843.5 lr=1.05e-04
+[2026-11-07 19:26:01]   [RQVAE] epoch 18/25 loss=0.8127 recon=0.0828 cb=0.6635 cm=0.6635 val_recon=0.0186 revived_total=3197 (15.1s)
+[2026-11-07 19:26:02]     [RQVAE] epoch 19/25 step 19000 loss=0.8127 cb=0.6638 cm=0.6638 perp0=835.3 perpL=825.8 lr=1.02e-04
+[2026-11-07 19:26:04]     [RQVAE] epoch 19/25 step 19100 loss=0.8144 cb=0.6646 cm=0.6646 perp0=832.5 perpL=843.8 lr=9.98e-05
+[2026-11-07 19:26:05]     [RQVAE] epoch 19/25 step 19200 loss=0.8046 cb=0.6570 cm=0.6570 perp0=843.6 perpL=836.6 lr=9.72e-05
+[2026-11-07 19:26:06]     [RQVAE] epoch 19/25 step 19300 loss=0.8030 cb=0.6560 cm=0.6560 perp0=826.1 perpL=834.5 lr=9.47e-05
+[2026-11-07 19:26:08]     [RQVAE] epoch 19/25 step 19400 loss=0.8107 cb=0.6622 cm=0.6622 perp0=833.2 perpL=841.2 lr=9.21e-05
+[2026-11-07 19:26:09]     [RQVAE] epoch 19/25 step 19500 loss=0.8105 cb=0.6615 cm=0.6615 perp0=843.6 perpL=835.9 lr=8.96e-05
+[2026-11-07 19:26:10]     [RQVAE] epoch 19/25 step 19600 loss=0.8118 cb=0.6626 cm=0.6626 perp0=831.1 perpL=842.3 lr=8.72e-05
+[2026-11-07 19:26:12]     [RQVAE] epoch 19/25 step 19700 loss=0.8143 cb=0.6652 cm=0.6652 perp0=844.2 perpL=841.4 lr=8.47e-05
+[2026-11-07 19:26:13]     [RQVAE] epoch 19/25 step 19800 loss=0.8190 cb=0.6690 cm=0.6690 perp0=839.7 perpL=837.6 lr=8.23e-05
+[2026-11-07 19:26:14]     [RQVAE] epoch 19/25 step 19900 loss=0.8203 cb=0.6701 cm=0.6701 perp0=836.3 perpL=852.7 lr=7.99e-05
+[2026-11-07 19:26:16]   [RQVAE] epoch 19/25 loss=0.8129 recon=0.0827 cb=0.6639 cm=0.6639 val_recon=0.0184 revived_total=3197 (15.2s)
+[2026-11-07 19:26:17]     [RQVAE] epoch 20/25 step 20000 loss=0.8069 cb=0.6592 cm=0.6592 perp0=830.5 perpL=829.6 lr=7.76e-05
+[2026-11-07 19:26:18]     [RQVAE] epoch 20/25 step 20100 loss=0.8162 cb=0.6670 cm=0.6670 perp0=838.5 perpL=850.8 lr=7.52e-05
+[2026-11-07 19:26:20]     [RQVAE] epoch 20/25 step 20200 loss=0.8145 cb=0.6655 cm=0.6655 perp0=828.8 perpL=836.8 lr=7.29e-05
+[2026-11-07 19:26:21]     [RQVAE] epoch 20/25 step 20300 loss=0.8095 cb=0.6609 cm=0.6609 perp0=833.4 perpL=849.5 lr=7.07e-05
+[2026-11-07 19:26:23]     [RQVAE] epoch 20/25 step 20400 loss=0.8108 cb=0.6620 cm=0.6620 perp0=849.6 perpL=830.4 lr=6.84e-05
+[2026-11-07 19:26:24]     [RQVAE] epoch 20/25 step 20500 loss=0.8124 cb=0.6634 cm=0.6634 perp0=826.3 perpL=838.9 lr=6.62e-05
+[2026-11-07 19:26:26]     [RQVAE] epoch 20/25 step 20600 loss=0.8122 cb=0.6632 cm=0.6632 perp0=841.7 perpL=848.8 lr=6.40e-05
+[2026-11-07 19:26:27]     [RQVAE] epoch 20/25 step 20700 loss=0.8174 cb=0.6678 cm=0.6678 perp0=830.3 perpL=840.9 lr=6.19e-05
+[2026-11-07 19:26:28]     [RQVAE] epoch 20/25 step 20800 loss=0.7950 cb=0.6494 cm=0.6494 perp0=833.4 perpL=830.2 lr=5.98e-05
+[2026-11-07 19:26:30]     [RQVAE] epoch 20/25 step 20900 loss=0.8056 cb=0.6581 cm=0.6581 perp0=824.3 perpL=838.1 lr=5.77e-05
+[2026-11-07 19:26:31]     [RQVAE] epoch 20/25 step 21000 loss=0.8126 cb=0.6635 cm=0.6635 perp0=827.2 perpL=845.5 lr=5.56e-05
+[2026-11-07 19:26:32]   [RQVAE] epoch 20/25 loss=0.8130 recon=0.0825 cb=0.6641 cm=0.6641 val_recon=0.0183 revived_total=3197 (16.0s)
+[2026-11-07 19:26:34]     [RQVAE] epoch 21/25 step 21100 loss=0.8191 cb=0.6693 cm=0.6693 perp0=838.1 perpL=844.4 lr=5.36e-05
+[2026-11-07 19:26:35]     [RQVAE] epoch 21/25 step 21200 loss=0.8147 cb=0.6656 cm=0.6656 perp0=831.4 perpL=846.1 lr=5.16e-05
+[2026-11-07 19:26:37]     [RQVAE] epoch 21/25 step 21300 loss=0.8005 cb=0.6540 cm=0.6540 perp0=814.0 perpL=853.8 lr=4.97e-05
+[2026-11-07 19:26:38]     [RQVAE] epoch 21/25 step 21400 loss=0.8061 cb=0.6587 cm=0.6587 perp0=826.2 perpL=836.1 lr=4.77e-05
+[2026-11-07 19:26:39]     [RQVAE] epoch 21/25 step 21500 loss=0.8128 cb=0.6639 cm=0.6639 perp0=820.8 perpL=840.5 lr=4.59e-05
+[2026-11-07 19:26:41]     [RQVAE] epoch 21/25 step 21600 loss=0.8073 cb=0.6592 cm=0.6592 perp0=833.0 perpL=838.8 lr=4.40e-05
+[2026-11-07 19:26:42]     [RQVAE] epoch 21/25 step 21700 loss=0.8104 cb=0.6620 cm=0.6620 perp0=830.7 perpL=834.9 lr=4.22e-05
+[2026-11-07 19:26:43]     [RQVAE] epoch 21/25 step 21800 loss=0.8065 cb=0.6587 cm=0.6587 perp0=833.2 perpL=847.3 lr=4.04e-05
+[2026-11-07 19:26:45]     [RQVAE] epoch 21/25 step 21900 loss=0.8196 cb=0.6698 cm=0.6698 perp0=837.5 perpL=841.4 lr=3.87e-05
+[2026-11-07 19:26:46]     [RQVAE] epoch 21/25 step 22000 loss=0.8256 cb=0.6745 cm=0.6745 perp0=827.2 perpL=839.7 lr=3.69e-05
+[2026-11-07 19:26:48]   [RQVAE] epoch 21/25 loss=0.8131 recon=0.0824 cb=0.6643 cm=0.6643 val_recon=0.0181 revived_total=3197 (15.6s)
+[2026-11-07 19:26:49]     [RQVAE] epoch 22/25 step 22100 loss=0.8053 cb=0.6582 cm=0.6582 perp0=822.5 perpL=826.7 lr=3.53e-05
+[2026-11-07 19:26:50]     [RQVAE] epoch 22/25 step 22200 loss=0.8084 cb=0.6609 cm=0.6609 perp0=831.5 perpL=832.4 lr=3.36e-05
+[2026-11-07 19:26:51]     [RQVAE] epoch 22/25 step 22300 loss=0.8251 cb=0.6741 cm=0.6741 perp0=841.6 perpL=841.8 lr=3.20e-05
+[2026-11-07 19:26:53]     [RQVAE] epoch 22/25 step 22400 loss=0.8140 cb=0.6650 cm=0.6650 perp0=825.5 perpL=844.5 lr=3.05e-05
+[2026-11-07 19:26:54]     [RQVAE] epoch 22/25 step 22500 loss=0.8129 cb=0.6641 cm=0.6641 perp0=830.3 perpL=844.2 lr=2.89e-05
+[2026-11-07 19:26:56]     [RQVAE] epoch 22/25 step 22600 loss=0.8120 cb=0.6635 cm=0.6635 perp0=825.5 perpL=840.1 lr=2.74e-05
+[2026-11-07 19:26:57]     [RQVAE] epoch 22/25 step 22700 loss=0.8053 cb=0.6579 cm=0.6579 perp0=818.6 perpL=830.2 lr=2.60e-05
+[2026-11-07 19:26:58]     [RQVAE] epoch 22/25 step 22800 loss=0.8106 cb=0.6621 cm=0.6621 perp0=838.0 perpL=836.3 lr=2.46e-05
+[2026-11-07 19:27:00]     [RQVAE] epoch 22/25 step 22900 loss=0.8059 cb=0.6585 cm=0.6585 perp0=848.6 perpL=841.7 lr=2.32e-05
+[2026-11-07 19:27:01]     [RQVAE] epoch 22/25 step 23000 loss=0.8085 cb=0.6607 cm=0.6607 perp0=831.8 perpL=833.6 lr=2.18e-05
+[2026-11-07 19:27:03]     [RQVAE] epoch 22/25 step 23100 loss=0.8217 cb=0.6716 cm=0.6716 perp0=838.1 perpL=842.0 lr=2.05e-05
+[2026-11-07 19:27:04]   [RQVAE] epoch 22/25 loss=0.8132 recon=0.0823 cb=0.6644 cm=0.6644 val_recon=0.0181 revived_total=3197 (16.0s)
+[2026-11-07 19:27:05]     [RQVAE] epoch 23/25 step 23200 loss=0.8033 cb=0.6561 cm=0.6561 perp0=841.0 perpL=839.3 lr=1.93e-05
+[2026-11-07 19:27:07]     [RQVAE] epoch 23/25 step 23300 loss=0.8126 cb=0.6640 cm=0.6640 perp0=824.1 perpL=827.7 lr=1.80e-05
+[2026-11-07 19:27:08]     [RQVAE] epoch 23/25 step 23400 loss=0.8143 cb=0.6653 cm=0.6653 perp0=829.8 perpL=848.3 lr=1.68e-05
+[2026-11-07 19:27:10]     [RQVAE] epoch 23/25 step 23500 loss=0.8108 cb=0.6626 cm=0.6626 perp0=817.8 perpL=851.9 lr=1.57e-05
+[2026-11-07 19:27:11]     [RQVAE] epoch 23/25 step 23600 loss=0.8019 cb=0.6551 cm=0.6551 perp0=834.2 perpL=836.0 lr=1.46e-05
+[2026-11-07 19:27:12]     [RQVAE] epoch 23/25 step 23700 loss=0.8245 cb=0.6738 cm=0.6738 perp0=822.1 perpL=843.9 lr=1.35e-05
+[2026-11-07 19:27:14]     [RQVAE] epoch 23/25 step 23800 loss=0.8199 cb=0.6701 cm=0.6701 perp0=824.9 perpL=852.0 lr=1.25e-05
+[2026-11-07 19:27:15]     [RQVAE] epoch 23/25 step 23900 loss=0.8210 cb=0.6707 cm=0.6707 perp0=834.6 perpL=850.9 lr=1.15e-05
+[2026-11-07 19:27:16]     [RQVAE] epoch 23/25 step 24000 loss=0.8053 cb=0.6583 cm=0.6583 perp0=830.2 perpL=838.8 lr=1.05e-05
+[2026-11-07 19:27:18]     [RQVAE] epoch 23/25 step 24100 loss=0.8043 cb=0.6572 cm=0.6572 perp0=815.5 perpL=836.3 lr=9.64e-06
+[2026-11-07 19:27:19]   [RQVAE] epoch 23/25 loss=0.8131 recon=0.0822 cb=0.6644 cm=0.6644 val_recon=0.0180 revived_total=3197 (15.6s)
+[2026-11-07 19:27:20]     [RQVAE] epoch 24/25 step 24200 loss=0.8106 cb=0.6627 cm=0.6627 perp0=839.5 perpL=836.1 lr=8.76e-06
+[2026-11-07 19:27:22]     [RQVAE] epoch 24/25 step 24300 loss=0.8117 cb=0.6631 cm=0.6631 perp0=826.1 perpL=843.0 lr=7.93e-06
+[2026-11-07 19:27:23]     [RQVAE] epoch 24/25 step 24400 loss=0.8077 cb=0.6599 cm=0.6599 perp0=826.1 perpL=841.8 lr=7.15e-06
+[2026-11-07 19:27:24]     [RQVAE] epoch 24/25 step 24500 loss=0.8182 cb=0.6684 cm=0.6684 perp0=828.4 perpL=839.0 lr=6.40e-06
+[2026-11-07 19:27:25]     [RQVAE] epoch 24/25 step 24600 loss=0.8311 cb=0.6792 cm=0.6792 perp0=828.3 perpL=850.6 lr=5.69e-06
+[2026-11-07 19:27:27]     [RQVAE] epoch 24/25 step 24700 loss=0.8132 cb=0.6649 cm=0.6649 perp0=826.1 perpL=839.3 lr=5.02e-06
+[2026-11-07 19:27:28]     [RQVAE] epoch 24/25 step 24800 loss=0.8186 cb=0.6693 cm=0.6693 perp0=829.6 perpL=838.0 lr=5.00e-06
+[2026-11-07 19:27:29]     [RQVAE] epoch 24/25 step 24900 loss=0.8056 cb=0.6584 cm=0.6584 perp0=830.5 perpL=841.6 lr=5.00e-06
+[2026-11-07 19:27:31]     [RQVAE] epoch 24/25 step 25000 loss=0.8098 cb=0.6620 cm=0.6620 perp0=826.9 perpL=852.7 lr=5.00e-06
+[2026-11-07 19:27:32]     [RQVAE] epoch 24/25 step 25100 loss=0.8065 cb=0.6585 cm=0.6585 perp0=830.3 perpL=837.8 lr=5.00e-06
+[2026-11-07 19:27:33]     [RQVAE] epoch 24/25 step 25200 loss=0.8154 cb=0.6664 cm=0.6664 perp0=834.8 perpL=833.3 lr=5.00e-06
+[2026-11-07 19:27:35]   [RQVAE] epoch 24/25 loss=0.8130 recon=0.0822 cb=0.6644 cm=0.6644 val_recon=0.0180 revived_total=3197 (15.1s)
+[2026-11-07 19:27:36]     [RQVAE] epoch 25/25 step 25300 loss=0.8173 cb=0.6679 cm=0.6679 perp0=828.6 perpL=844.8 lr=5.00e-06
+[2026-11-07 19:27:38]     [RQVAE] epoch 25/25 step 25400 loss=0.8139 cb=0.6652 cm=0.6652 perp0=836.0 perpL=847.8 lr=5.00e-06
+[2026-11-07 19:27:39]     [RQVAE] epoch 25/25 step 25500 loss=0.8224 cb=0.6721 cm=0.6721 perp0=835.9 perpL=837.5 lr=5.00e-06
+[2026-11-07 19:27:40]     [RQVAE] epoch 25/25 step 25600 loss=0.8125 cb=0.6641 cm=0.6641 perp0=840.6 perpL=834.2 lr=5.00e-06
+[2026-11-07 19:27:42]     [RQVAE] epoch 25/25 step 25700 loss=0.8123 cb=0.6637 cm=0.6637 perp0=824.5 perpL=851.7 lr=5.00e-06
+[2026-11-07 19:27:43]     [RQVAE] epoch 25/25 step 25800 loss=0.8087 cb=0.6608 cm=0.6608 perp0=833.8 perpL=846.3 lr=5.00e-06
+[2026-11-07 19:27:44]     [RQVAE] epoch 25/25 step 25900 loss=0.8170 cb=0.6676 cm=0.6676 perp0=834.4 perpL=837.6 lr=5.00e-06
+[2026-11-07 19:27:46]     [RQVAE] epoch 25/25 step 26000 loss=0.8101 cb=0.6621 cm=0.6621 perp0=832.0 perpL=837.9 lr=5.00e-06
+[2026-11-07 19:27:47]     [RQVAE] epoch 25/25 step 26100 loss=0.8197 cb=0.6700 cm=0.6700 perp0=836.9 perpL=841.7 lr=5.00e-06
+[2026-11-07 19:27:48]     [RQVAE] epoch 25/25 step 26200 loss=0.8075 cb=0.6601 cm=0.6601 perp0=837.9 perpL=833.8 lr=5.00e-06
+[2026-11-07 19:27:50]   [RQVAE] epoch 25/25 loss=0.8131 recon=0.0822 cb=0.6645 cm=0.6645 val_recon=0.0179 revived_total=3197 (15.4s)
+[2026-11-07 19:29:07] [rqvae] injectivity diagnostics saved
+[2026-11-07 19:29:07] 
+[2026-11-07 19:29:07] --- rqvae reconstruction ---
+[2026-11-07 19:29:07] +------------------------+----------+------------------------+
+[2026-11-07 19:29:07] | metric                 | value    | note                   |
+[2026-11-07 19:29:07] +------------------------+----------+------------------------+
+[2026-11-07 19:29:07] | val recon (continuous) | 0.017942 | decoder(encoder(x))    |
+[2026-11-07 19:29:07] | val recon (quantized)  | 0.082621 | decoder(code sum)      |
+[2026-11-07 19:29:07] | quantization cost      | 0.064679 | quantized - continuous |
+[2026-11-07 19:29:07] +------------------------+----------+------------------------+
+[2026-11-07 19:29:07] --- rqvae tuple diagnostics ---
+[2026-11-07 19:29:07] +-------------------------+---------------+-------+
+[2026-11-07 19:29:07] | metric                  | value         | extra |
+[2026-11-07 19:29:07] +-------------------------+---------------+-------+
+[2026-11-07 19:29:07] | n_items                 | 4,783,154     |       |
+[2026-11-07 19:29:07] | tuple_length            | 3             |       |
+[2026-11-07 19:29:07] | n_unique_tuples         | 3,428,074     |       |
+[2026-11-07 19:29:07] | uniqueness_ratio        | 0.71670       |       |
+[2026-11-07 19:29:07] | collision_rate          | 0.28330       |       |
+[2026-11-07 19:29:07] | items_in_collision_frac | 0.40616       |       |
+[2026-11-07 19:29:07] | items_in_collision      | 1,942,728     |       |
+[2026-11-07 19:29:07] | n_colliding_tuples      | 587,648       |       |
+[2026-11-07 19:29:07] | max_collision_bucket    | 564           |       |
+[2026-11-07 19:29:07] | mean_collision_bucket   | 1.39529       |       |
+[2026-11-07 19:29:07] | joint_entropy           | 14.77944      |       |
+[2026-11-07 19:29:07] | joint_perplexity        | 2621981.47961 |       |
+[2026-11-07 19:29:07] | effective_cells         | 6,758,007     |       |
+[2026-11-07 19:29:07] +-------------------------+---------------+-------+
+[2026-11-07 19:29:07] done. artifacts in runs/sid_3x1024_baseline

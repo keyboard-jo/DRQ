@@ -1,0 +1,195 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}
+\usepackage{enumitem}
+
+\title{RQ-VAE and DRQ: Coupled versus Decoupled Residual Quantization}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{The point}
+
+RQ-VAE trains two things in one loop---a continuous geometry (the encoder and
+decoder) and a discrete code assignment (the codebook)---and ties them together
+with the straight-through estimator. DRQ does the same two jobs in two separate
+stages: first learn the geometry with a plain continuous VAE, then assign
+discrete codes with hierarchical $k$-means on the frozen geometry. The split
+matters because the two jobs pull in opposite directions. Learning geometry
+wants the latent vectors spread over the whole manifold; assigning codes wants
+an even, flat distribution over codes. One coupled objective cannot do both at
+once, so RQ-VAE ends up with far fewer usable codes than it nominally has, and
+items share the same code. DRQ's two stages each satisfy their own demand.
+
+\section{RQ-VAE}
+
+An encoder maps an item embedding $x$ to a continuous latent vector
+\begin{equation}
+  z = E(x),
+  \label{eq:enc}
+\end{equation}
+and a decoder $D$ maps a quantized copy of $z$ back to a reconstruction
+$\hat x$. Quantization is residual and hierarchical, with $L$ codebooks
+$\mathcal{C}^{(0)}, \dots, \mathcal{C}^{(L-1)}$, each holding $K$ codewords.
+Starting from $r_0 = z$, level $\ell$ assigns the nearest codeword and subtracts
+it:
+\begin{align}
+  c^{(\ell)} &= \operatorname*{arg\,min}_{c \in \mathcal{C}^{(\ell)}}
+                \bigl\| r_{\ell-1} - c \bigr\|_2^2,
+                \label{eq:assign} \\
+  r_\ell &= r_{\ell-1} - c^{(\ell)}.
+  \label{eq:residual}
+\end{align}
+After $L$ levels the reconstruction and the loss are
+\begin{align}
+  \hat z &= \sum_{\ell=0}^{L-1} c^{(\ell)},
+  \qquad \hat x = D(\hat z),
+  \label{eq:recon} \\
+  \mathcal{L} &= \| x - \hat x \|_2^2
+  + \sum_{\ell=0}^{L-1} \Bigl(
+      \bigl\| \mathrm{sg}(r_{\ell-1}) - c^{(\ell)} \bigr\|_2^2
+    + \beta \bigl\| r_{\ell-1} - \mathrm{sg}(c^{(\ell)}) \bigr\|_2^2
+    \Bigr).
+  \label{eq:loss}
+\end{align}
+Here $\mathrm{sg}$ is stop-gradient and $\beta$ is the commitment weight. The
+assignment \eqref{eq:assign} is not differentiable. The straight-through
+estimator therefore treats the quantized vector as the identity: the decoder's
+gradient with respect to $\hat z$ is copied to $z$, so the encoder receives
+$\partial \mathcal{L}/\partial \hat z$ unchanged. Implemented as
+$z_{\mathrm{ste}} = z + \mathrm{sg}(\hat z - z)$, and the decoder runs on
+$z_{\mathrm{ste}}$.
+
+The item's semantic ID is the tuple $(c^{(0)}, \dots, c^{(L-1)})$, with nominal
+capacity $K^L$. The set of all possible reconstructions $\hat z$ is the Minkowski
+sum $\mathcal{C}^{(0)} + \cdots + \mathcal{C}^{(L-1)}$: a grid of $K^L$ points,
+each the sum of one codeword per level.
+
+\section{Why collisions happen}
+
+Nominal capacity overstates what the codebook can actually separate. Two
+different items collide when they receive the same tuple, and the collision rate
+is set by how many tuples are in real use, not by $K^L$.
+
+DRQ quantifies this with an expected overlap rate. Let $\pi_i$ be the fraction
+of items assigned to codeword $i$, and $\sigma^2$ the variance of a small
+perturbation applied to the latent vectors at retrieval time. The overlap rate
+and the effective codebook size are
+\begin{equation}
+  O_\pi = \sum_{i} \sum_{j} \pi_i \pi_j
+          \exp\!\Bigl( -\frac{\| c_i - c_j \|_2^2}{4 \sigma^2} \Bigr),
+  \qquad
+  K_{\mathrm{eff}} = \frac{1}{O_\pi}.
+  \label{eq:overlap}
+\end{equation}
+Splitting \eqref{eq:overlap} into diagonal and off-diagonal terms shows the two
+failure modes:
+\begin{equation}
+  O_\pi =
+    \underbrace{\sum_{i} \pi_i^2}_{\text{distribution floor}}
+    + \underbrace{\sum_{i \ne j} \pi_i \pi_j
+      \exp\!\Bigl( -\frac{\| c_i - c_j \|_2^2}{4 \sigma^2} \Bigr)}_{\text{geometry cross-overlap}}.
+  \label{eq:split}
+\end{equation}
+For a uniform codebook with infinitely separated codewords, $\pi_i = 1/K$ and
+the off-diagonal term vanishes, leaving $O_\pi = 1/K$ and $K_{\mathrm{eff}} = K$.
+Any deviation from that ideal shrinks $K_{\mathrm{eff}}$:
+
+\begin{itemize}[nosep]
+  \item \textbf{Distribution penalty.} When usage concentrates on a few codewords,
+    $\sum_i \pi_i^2$ rises above $1/K$. This floor remains even when the
+    codewords sit far apart.
+  \item \textbf{Geometry penalty.} The Minkowski-sum grid is flat. When the data
+    lie on a curved manifold, most grid points sit where no item lives, and the
+    codewords that do carry items stay close together, keeping the cross-overlap
+    large.
+\end{itemize}
+
+Both effects push $K_{\mathrm{eff}}$ far below $K^L$. Then $4.8$M items can
+collide even though $1024^3 \approx 1.07 \times 10^9$ looks like plenty of room.
+
+\section{DRQ}
+
+DRQ keeps the hierarchical code structure but runs the two jobs separately.
+
+\textbf{Stage 1: continuous geometry.} Train the encoder and decoder as a plain
+VAE, with no codebook, no straight-through estimator, and no commitment term:
+\begin{equation}
+  \mathcal{L} = \mathbb{E}_{x} \bigl\| x - D(E(x)) \bigr\|_2^2
+              + \lambda \mathcal{L}_{\text{contrastive}}.
+  \label{eq:drq-stage1}
+\end{equation}
+The contrastive term is InfoNCE over positive pairs $(a, b)$ of related items
+(co-viewed or semantically similar), with in-batch negatives and cosine
+similarity scaled by a temperature $\tau$:
+\begin{equation}
+  \mathcal{L}_{\text{contrastive}} = -\frac{1}{B}\sum_{k=1}^{B}
+    \log\frac{\exp(\mathrm{sim}(z_{a_k}, z_{b_k})/\tau)}
+             {\sum_{j=1}^{B}\exp(\mathrm{sim}(z_{a_k}, z_{b_j})/\tau)},
+  \qquad z = E(x).
+  \label{eq:drq-infonce}
+\end{equation}
+The paper's DRQ-VAE sets $\lambda = 0$, so stage 1 is reconstruction only. The
+DRQ-VAE+CL variant uses $\lambda = 0.3$. The contrastive term is symmetric in
+practice and $\tau$ is not stated in the version we checked, so our default
+$\tau = 0.1$ is an assumption.
+Without a grid forcing it, the latent space is free to spread along the manifold.
+
+\textbf{Stage 2: discrete assignment.} Freeze the geometry and run hierarchical
+$k$-means on the latent vectors. Level $0$ clusters $z$ itself; each later level
+clusters the residual left by the level above. Each level's centroids are fitted
+on a uniform random sample $\mathcal{S}$ of latents (default $10^6$ rows), then
+every latent in the corpus is assigned to its nearest centroid, as in
+\eqref{eq:assign}. Centroids are means, not gradient-updated:
+\begin{equation}
+  c^{(\ell)}_i = \frac{1}{|\mathcal{S}^{(\ell)}_i|}
+                 \sum_{r \in \mathcal{S}^{(\ell)}_i} r,
+  \qquad
+  \mathcal{S}^{(\ell)}_i = \bigl\{ r \in \mathcal{S} : r \text{ assigned to centroid } i \bigr\}.
+  \label{eq:drq-mean}
+\end{equation}
+Within each Lloyd iteration every centroid is updated from all of its sampled
+members, so rarely used codes still get updates, unlike codes trained only
+through the straight-through estimator. This is an argument, not a measured
+result. Empty clusters are not special-cased in our formulation.
+
+\section{What changed}
+
+\begin{itemize}[nosep]
+  \item RQ-VAE optimizes geometry and assignment together; DRQ optimizes geometry
+    first and assignment second.
+  \item The overlap kernel width $\sigma$ is a free choice in our implementation.
+    We set $\sigma = 0.1 \times$ the median nearest-neighbour distance between
+    used centroids, per level. The paper's $\sigma$ is defined as a
+    retrieval-time perturbation variance, and our choice is not derived from it.
+  \item RQ-VAE's assignment gradients flow only through selected codes via the
+    straight-through estimator; DRQ's assignment is a full-dataset clustering.
+  \item RQ-VAE forces the latent space onto a Minkowski-sum grid; DRQ lets the
+    latent space spread first, then adapts the grid to where the data are.
+\end{itemize}
+
+On the paper's industrial dataset (over $15$M items, $K = 4096$, $L = 3$),
+RQ-VAE used only $512$ of $4096$ codes at the coarsest level, and DRQ cut the
+collision rate from $0.229$ to $0.075$. The collision-rate denominator is not
+stated in the version we checked, so treat these as reported values.
+
+\section{Takeaways}
+
+\begin{itemize}[nosep]
+  \item Collisions are a capacity problem: the effective codebook size, not the
+    nominal $K^L$, decides whether items collide.
+  \item Two things shrink effective capacity: skewed code usage (distribution)
+    and a flat grid on a curved manifold (geometry).
+  \item Fixing either one inside a coupled objective is hard, because the two
+    demand opposite behaviors.
+  \item DRQ's answer is to decouple: learn geometry without codes, then assign
+    codes without gradients.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,269 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\sg}{\operatorname{sg}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\Opi}{\mathrm{O}_\pi}
+\newcommand{\Keff}{\mathrm{K}_{\mathrm{eff}}}
+
+\title{Semantic IDs for Generative Recommendation:\\
+RQ-VAE, DRQ, and a Controlled Benchmark on TencentGR-1M\\
+\large Preface}
+\author{rq-vae-msbd-5015}
+\date{November 2026}
+
+\begin{document}
+\maketitle
+
+\section{In plain terms}
+
+A generative recommender does not look products up in a table. It \emph{writes
+out} the identity of the product it wants to show, one token at a time, the way
+language is generated. To make that possible, every product in the catalog is
+first given a short code built from its content (text, image, or in our case a
+precomputed embedding). The codes are designed so that similar products get
+similar codes: the first number is a broad group label, the next numbers refine
+it. This document studies the two main ways those codes are manufactured today.
+
+Both methods aim at the same business property: every product should end up with
+a \emph{private} code. If two products share one code, the model cannot say
+which of the two it means, and the pair becomes one coin flip at serving time.
+With three code positions and 1024 choices per position there are about a
+billion possible codes for a catalog of 4.8 million products, so uniqueness
+should be trivial. It is not. In our runs, roughly a quarter to a third of
+products still share a code, depending on the method. The number of available
+codes barely matters; what matters is how the code-assignment mechanism
+distributes products over them.
+
+The experiment compares three mechanisms under one budget on a new dataset,
+TencentGR-1M (Tencent ads, all items embedded at 256 dimensions).
+\textbf{RQ-VAE} learns the code system and the product map at the same time,
+which is the standard recipe. \textbf{DRQ} learns the map first, freezes it, and
+only then lays codes on top, with no feedback between the two phases. \textbf{Warmup}
+splits the difference: map first for a few epochs, then the standard joint
+learning, to test whether ``learning separately at all'' is what buys DRQ its
+advantage, or only ``assigning codes by classic grouping instead of learning
+them''. The results are a raw-numbers benchmark; deciding which mechanism wins
+and why is the point of the study.
+
+\section{Experiment design}
+
+\subsection{Why re-implement}
+
+No official implementation of DRQ is available: it was published by Shopee on a
+proprietary corpus of 15M items, and neither the code nor the data accompany the
+paper. The RQ-VAE side traces to TIGER (Google DeepMind), whose released code is
+tied to its own training setup (Gumbel-Softmax selection, Sentence-T5 inputs on
+Amazon review data). Neither is directly usable on our corpus. We therefore
+re-implement both in a single script (\texttt{train\_drq\_vs\_rqvae.py}) that
+exposes the three arms behind one flag (\texttt{--arm
+rqvae\textbar warmup\textbar drq\textbar both\textbar all}), so every
+difference in the outputs can only come from the mechanism itself, not from
+budget or tuning. The paper's headline comparison is also on a different domain
+(advertising embeddings versus e-commerce product text), so we benchmark the
+claims on a new dataset rather than assume they transfer.
+
+\subsection{Arms and shared budget}
+
+All three arms see the identical configuration: latent dimension 64, $L = 3$
+code levels, $K = 1024$ codes per level, 25 training epochs, batch 4096, Adam
+with learning rate $5 \times 10^{-4}$, linear warmup over 2000 steps with cosine
+decay, seed 42, and a 90/10 train/validation item split.
+
+\begin{itemize}[nosep]
+  \item \texttt{rqvae}: joint training of encoder, decoder, and learned
+  codebooks with straight-through gradients (section~\ref{sec:rqvae}).
+  Codebooks init truncated-normal; a dead-code revival pass re-seeds codes used
+  below 10\% of mean usage. This is the baseline.
+  \item \texttt{warmup}: 5 reconstruction-only epochs (the arm's encoder and
+  decoder train with the quantizer bypassed), then the \emph{identical} joint
+  training as \texttt{rqvae}. Control arm: it isolates ``clean latent before
+  quantization'' from ``different assignment rule''.
+  \item \texttt{drq}: two decoupled stages (section~\ref{sec:drq}). Stage 1 is
+  the continuous VAE trained 25 epochs with $\lambda = 0$ (no contrastive term;
+  the paper's DRQ-VAE variant). Stage 2 fits hierarchical $k$-means (FAISS, 50
+  iterations, 3 restarts) on the frozen latents and assigns all items. The
+  $\lambda > 0$ contrastive variant (DRQ-VAE+CL) is implemented but not yet run.
+\end{itemize}
+
+Every arm is then scored by the same diagnostics on all 4,783,154 items:
+per-level codebook health (usage entropy, perplexity, Gini, effective codes
+$\Keff$ under a swept kernel width), tuple-level injectivity (collision rate,
+unique tuples, max collision bucket, effective cells), and validation
+reconstruction, which keeps the comparison fair: a scheme that lowers collisions
+by making worse codes has not really won.
+
+\subsection{Dataset}
+
+TencentGR-1M is the preliminary-round dataset of the Tencent Advertising
+Algorithm Challenge 2025 (TAAC 2025, ``All-Modality Generative Recommendation''),
+built from real, de-identified Tencent Ads logs and released publicly on
+Hugging Face \emph{(org: TAAC2025)}. It provides roughly one million user
+behavior sequences over a candidate pool of 4{,}783{,}154 ads, plus
+organizer-supplied multi-modal item representations. We use the item side only:
+a parquet table mapping each anonymous ad id to a 256-dimensional content
+embedding, treated as a fixed input vector
+$x \in \R^{256}$ that already fuses the ad's text and visual modalities. User
+sequences, collaborative ids, and the remaining embedding tables (32 to 4096
+dimensions) are not touched in this study.
+
+The choice matters for the claims under test. DRQ's numbers come from a
+proprietary Shopee corpus; TIGER's from Amazon review text. Advertising item
+embeddings are a third, public, and much larger-than-paper regime per code space
+(4.78M items against $1024^3$ nominal codes), which is exactly where
+injectivity claims must be checked before they can be reused.
+
+\section{Background: the two mechanisms}
+
+\subsection{RQ-VAE: residual quantization inside a variational autoencoder}
+\label{sec:rqvae}
+
+Following SoundStream and TIGER, a quantizer $Q$ with $L$ levels maps a latent
+$z \in \R^{d}$ to integer codes through a cascade of residual nearest-neighbor
+searches. Level $\ell$ owns a codebook
+$C^{(\ell)} = \{ e^{(\ell)}_i \}_{i=1}^{K} \subset \R^{d}$ of $K$ learned
+centroids, and
+\begin{align}
+  r_0 &= z, \nonumber \\
+  c_\ell &= \arg\min_{i} \; \norm{r_{\ell-1} - e^{(\ell)}_i}^2 ,
+    \qquad
+  r_\ell = r_{\ell-1} - e^{(\ell)}_{c_\ell}, \quad \ell = 1, \dots, L.
+    \label{eq:rq}
+\end{align}
+The quantized latent is $\hat z = \sum_{\ell} e^{(\ell)}_{c_\ell}$ and the
+semantic ID of an item is the tuple $(c_1, \dots, c_L)$. The tuple reads
+coarse to fine because each level approximates the residual left by the levels
+before it. Training minimizes reconstruction through a decoder $D$ plus the
+vector-quantization objective
+\begin{align}
+  \mathcal{L}(x) \;=\; \norm{x - D(\hat z_{\mathrm{ste}})}^2
+  \;+\; \sum_{\ell=1}^{L} \Bigl[
+    \underbrace{\bigl\lVert \sg(r_{\ell-1}) - e^{(\ell)}_{c_\ell} \bigr\rVert^2}
+      _{\text{codebook: pull centroid to its points}}
+    \;+\; \beta \underbrace{\bigl\lVert r_{\ell-1}
+      - \sg(e^{(\ell)}_{c_\ell}) \bigr\rVert^2}
+      _{\text{commitment: pull point to its centroid}} \Bigr],
+    \label{eq:loss}\\
+  z_{\mathrm{ste}} &= z + \sg(\hat z - z), \label{eq:ste}
+\end{align}
+where $\sg(\cdot)$ stops gradients and $\beta$ (0.1 here) weights how hard the
+encoder is pulled toward the frozen codebook. Equation~\eqref{eq:ste} is the
+straight-through estimator: forward pass is quantized, backward pass copies
+gradients at $\hat z$ through to $z$ as if $Q$ were the identity.
+
+Two structural facts explain most of what follows. First, every reachable
+$\hat z$ is a \emph{Minkowski sum} of the $L$ codebooks: the representable
+latent set is the additive grid
+$\bigl\{ \sum_\ell e^{(\ell)}_{i_\ell} \bigr\}$, which grows arithmetically as
+the codebooks move under gradient descent. Second, a gradient reaches a centroid
+only through samples for which it wins the $\arg\min$ in \eqref{eq:rq}; a code
+that loses early gets a smaller share of updates, drifts further from the data,
+and loses again. This is the failure mode the dead-code revival pass exists to
+interrupt.
+
+\subsection{Injectivity: why a billion slots still collide}
+
+Let $N$ be the item count and $U$ the number of distinct full tuples among the
+$N$ assignments. The benchmark's headline number is the collision rate
+\begin{equation}
+  \text{collision rate} \;=\; 1 - \frac{U}{N},
+  \label{eq:collision}
+\end{equation}
+the fraction of items without a private ID. With $L = 3$, $K = 1024$, the
+nominal tuple space is $K^L \approx 1.07 \times 10^9 \gg N = 4.78 \times 10^6$.
+If items landed \emph{uniformly at random} over $M = K^L$ cells, the expected
+unique fraction would follow the birthday relation
+\begin{equation}
+  \frac{U}{N} \;=\; \frac{1 - e^{-x}}{x}, \qquad x = \frac{N}{M},
+  \label{eq:birthday}
+\end{equation}
+which at $x \approx 0.0045$ predicts $U/N \approx 0.998$: essentially
+collision-free. Measured uniqueness around $0.72$ therefore cannot be a slot
+shortage. It has two candidate sources. Skewed per-level usage caps how much of
+the tuple space is reachable, since the reachable space is bounded by the
+product of per-level \emph{effective} code counts. And joint concentration
+wastes the rest: when an item's level-2 code mostly repeats what levels 0 and 1
+already said, the cascade spends bits without buying separation.
+
+DRQ's paper formalizes the per-level view with an expected overlap rate under a
+Gaussian kernel of bandwidth $\sigma$, summed over used centroids,
+\begin{equation}
+  \Opi^{(\ell)}(\sigma) \;=\; \sum_{i}\sum_{j} \pi_i \pi_j\,
+    \exp\!\Bigl(-\frac{\norm{c_i - c_j}^2}{4\sigma^2}\Bigr),
+  \qquad
+  \Keff^{(\ell)} \;=\; \frac{1}{\Opi^{(\ell)}},
+  \label{eq:opiq}
+\end{equation}
+where $\pi_i$ is the usage fraction of code $i$. It splits exactly into a
+\emph{distribution floor} $\sum_i \pi_i^2$ (usage skew) plus a \emph{geometry
+cross-overlap} $\sum_{i \neq j} \pi_i \pi_j \exp(-\norm{c_i - c_j}^2 / 4\sigma^2)$
+(centroids crowded onto the manifold). Balance fixes the first term only; the
+second is what $k$-means-based assignment is argued to fix. We adopt
+\eqref{eq:opiq} as the benchmark's geometry metric, reporting
+$\Keff$ at a swept multiple of an auto-chosen $\sigma$ (0.1 $\times$ the median
+nearest-neighbour distance between used centroids). In
+\eqref{eq:opiq} the $c_i$ are the level's centroids; in \eqref{eq:rq} they are
+the level-$\ell$ entries $e^{(\ell)}_i$. The metric is post-hoc: no diagnostic
+parameter enters training or affects a single assigned ID.
+
+\subsection{DRQ: decoupled residual quantization}
+\label{sec:drq}
+
+DRQ (arXiv:2606.01844) starts from the diagnosis above: in joint RQ-VAE training
+the reconstruction loss wants $z$ to concentrate, the codebook objective wants
+usage to spread, and both fight through the same gradients, so the geometry ends
+up neither well spread nor well partitioned. It therefore splits training into
+two stages that never share gradients.
+
+\emph{Stage 1, continuous VAE.} Train $E, D$ with reconstruction only,
+optionally plus a contrastive term:
+\begin{equation}
+  \mathcal{L}_{1}
+  \;=\; \mathbb{E}_x \bigl\lVert x - D(E(x)) \bigr\rVert^2
+  \;+\; \lambda\, \mathcal{L}_{\mathrm{contrastive}},
+  \label{eq:drq-stage1}
+\end{equation}
+where $\mathcal{L}_{\mathrm{contrastive}}$ is a symmetric in-batch InfoNCE loss
+on $z = E(x)$ between paired positive items (co-viewed or semantically similar;
+temperature $\tau$), and $\lambda = 0$ gives the paper's DRQ-VAE variant while
+$\lambda = 0.3$ gives DRQ-VAE+CL. No codebook, no argmin, no straight-through
+pass: the latent geometry settles freely under the encoder's own objectives.
+
+\emph{Stage 2, post-hoc hierarchical $k$-means.} Freeze the latents and build
+the residual cascade of \eqref{eq:rq} level by level: level $\ell$ fits
+$k$-means with $K$ centroids on the \emph{residual pool} left by levels
+$1, \dots, \ell-1$ over all training items, then every item is assigned its
+nearest centroid and passes its residual to the next level. Two properties
+separate this from STE codebook training. Assignment quality is optimized
+directly (each cell's centroids are the means of exactly the points assigned to
+it), and every point votes on every centroid at every Lloyd iteration, unlike
+\eqref{eq:loss} where only argmin-winners update. What stage 2 \emph{cannot} do
+is reshape $z$: any pathology the VAE leaves in the latent is inherited.
+
+\section{References}
+
+\begin{enumerate}[nosep,leftmargin=*]
+  \item DRQ: \emph{Rethinking Semantic ID Construction for Generative
+        Recommendation} (arXiv:2606.01844). The arm reimplemented here; source
+        of the overlap metric \eqref{eq:opiq}.
+  \item TIGER: \emph{Recommender Systems with Generative Retrieval}
+        (arXiv:2305.05065). The RQ-VAE semantic-ID recipe being benchmarked.
+  \item SoundStream: \emph{An End-to-End Neural Audio Codec}
+        (arXiv:2107.03312). Origin of residual quantization with the
+        stop-gradient loss \eqref{eq:loss}.
+  \item Lee et al., \emph{Autoregressive Image Generation using Residual
+        Quantization} (CVPR 2022). The name ``RQ-VAE''.
+  \item TencentGR-1M and the TAAC 2025 challenge:
+        \texttt{huggingface.co/datasets/TAAC2025/TencentGR-1M}; competition
+        paper arXiv:2604.04976.
+  \item GRID handbook (arXiv:2507.22224). Independent evidence that RQ-VAE
+        underperforms simpler SID construction; motivates the benchmark.
+\end{enumerate}
+
+\end{document}

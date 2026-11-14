@@ -1,0 +1,443 @@
+% project-brief.tex — team-facing introduction to the SID injectivity experiment.
+\documentclass[11pt]{article}
+
+% --- page -------------------------------------------------------------------
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{microtype}
+
+% --- math -------------------------------------------------------------------
+\usepackage{amsmath,amssymb,amsthm}
+\DeclareMathOperator{\argmin}{arg\,min}
+
+% --- tables / links ----------------------------------------------------------
+\usepackage[hidelinks]{hyperref}
+\usepackage{booktabs}   % \toprule \midrule \bottomrule
+\usepackage{enumitem}   % tighter lists
+
+\newcommand{\Keff}{K_{\mathrm{eff}}}
+\newcommand{\Opi}{\mathcal{O}_\pi}
+\newcommand{\Nitems}{N}
+
+% --- title -------------------------------------------------------------------
+\title{Semantic-ID Collisions in RQ-VAE Recommenders:\\ Experiment Brief and Metrics Guide}
+\author{}
+\date{November 2026}
+
+\begin{document}
+\maketitle
+
+\section{The point}
+
+We tokenize 4{,}783{,}154 item embeddings into Semantic IDs (SIDs) with a
+Residual-Quantized VAE (RQ-VAE) using 3 codebook levels of 1024 codes each.
+Nominal capacity is $1024^3 \approx 1.07 \times 10^9$ tuples, roughly 224 slots
+per item, yet a large fraction of items share their full tuple. This experiment
+asks \emph{why the capacity is not being realized}, by comparing training
+schemes that differ in one axis only: how tightly the latent geometry and the
+discrete assignment are coupled during training. Three arms are run
+(`\texttt{rqvae}` baseline, `\texttt{warmup}`, `\texttt{drq}`), scored by the
+same diagnostics, and reported here as raw numbers plus a guide to reading
+them. The analysis itself is left open, and the logs and
+`\texttt{*}\allowbreak diagnostics.json` files contain everything needed to do
+it.
+
+\section{Background}
+
+\subsection{RQ-VAE and Semantic IDs}
+
+An RQ-VAE maps an item embedding $x \in \mathbb{R}^{256}$ to a tuple of discrete
+codes $(c_1,\dots,c_L)$, one per quantization level. The encoder produces a
+continuous latent $z = E(x)$, then each level quantizes the residual left by the
+previous levels:
+\begin{equation}
+  r_0 = z, \qquad
+  c_\ell = \argmin_{i} \; \| r_{\ell-1} - e^{(\ell)}_i \|^2, \qquad
+  r_\ell = r_{\ell-1} - e^{(\ell)}_{c_\ell},
+  \label{eq:rq}
+\end{equation}
+where $e^{(\ell)}_i$ is the $i$-th entry of the level-$\ell$ codebook
+$\mathcal{C}_\ell$, $|\mathcal{C}_\ell| = K$. The reconstructed latent is
+$\hat{z} = \sum_{\ell=1}^{L} e^{(\ell)}_{c_\ell}$, decoded to $\hat{x} = D(\hat{z})$.
+Training uses reconstruction plus the VQ objective with straight-through
+gradients ($\mathrm{sg}$ is the stop-gradient operator):
+\begin{align}
+  \mathcal{L} &= \|x - \hat{x}\|^2
+   + \sum_{\ell=1}^{L} \bigl[ \|\mathrm{sg}(r_{\ell-1}) - e^{(\ell)}_{c_\ell}\|^2
+   + \beta \|r_{\ell-1} - \mathrm{sg}(e^{(\ell)}_{c_\ell})\|^2 \bigr],
+  \label{eq:loss}\\
+  z_{\mathrm{ste}} &= z + \mathrm{sg}(\hat{z} - z). \label{eq:ste}
+\end{align}
+Equation~\eqref{eq:ste} is how gradients bypass the non-differentiable
+$\arg\min$ in \eqref{eq:rq}.
+
+\emph{In plain terms:} the system gives every product a three-number barcode.
+Products with similar content get similar barcodes: the first number is a broad
+group label, the next two refine it. A generative recommender then learns to
+predict that barcode, number by number, when it guesses what a user wants next.
+
+\subsection{Why injectivity matters}
+
+A generative recommender predicts the SID of the next item token by token, so
+the SID map should be (nearly) one-to-one: items sharing a tuple become
+indistinguishable to the model. The collision rate is the fraction of items that
+do not have a private tuple. With $L=3$ and $K=1024$ we nominally have enough
+slots, but the \emph{realized} capacity depends on how uniformly assignments
+spread over tuples, and that depends on the latent geometry the encoder learns.
+The tension: the reconstruction loss wants $z$ to concentrate (a good AE
+compresses), while the quantizer wants assignments to spread over the codebook.
+In joint training both fight through the same gradients.
+
+\emph{In plain terms:} if two products share a barcode, the model cannot tell
+them apart, so it cannot reliably serve either. The puzzle is the gap between
+``there are enough barcodes'' (a billion possible) and ``they actually get
+used'' (about a third of products share one). This project measures where that
+gap comes from.
+
+\subsection{The DRQ idea}
+
+\textbf{DRQ} (Decoupled Residual Quantization, arXiv:2606.01844) splits the two
+demands into sequential stages:
+\begin{enumerate}[nosep]
+  \item \emph{Stage 1, continuous VAE.} Train $E, D$ with reconstruction only
+  (optionally plus a contrastive term $\lambda \mathcal{L}_{\mathrm{InfoNCE}}$;
+  $\lambda = 0$ in our run). No codebook, no straight-through gradient. The
+  latent geometry settles without quantizer pressure.
+  \item \emph{Stage 2, post-hoc hierarchical $k$-means.} Freeze the latents and
+  fit each level's codebook by dataset-level $k$-means on the residuals of that
+  level. Centroids are means over all points assigned to them, so every point
+  influences every centroid at every iteration, unlike STE training where only
+  the argmin-selected code receives a gradient.
+\end{enumerate}
+The third arm, \textbf{warmup}, is a control between the two: it runs the stage-1
+AE for 5 epochs alone, then hands off to the \emph{identical} joint RQ-VAE
+training as the baseline. It isolates the effect of ``unperturbed latent first''
+from the effect of ``$k$-means assignment instead of learned codebooks''.
+
+\emph{In plain terms:} instead of teaching the map-maker and the postcode
+system at the same time and letting them interfere, DRQ first lets the network
+draw the map of all products however it likes, then freezes it and stamps
+postcodes on the finished map with a classic grouping routine. The warmup arm
+splits the difference: clean map first, but postcodes are still learned.
+
+\section{Experimental setup}
+
+Both the arms and the scoring are implemented in
+`\texttt{train\_drq\_vs\_rqvae.py}` (the archived copies in each run folder are
+the exact scripts that produced those numbers). Shared configuration:
+
+\begin{itemize}[nosep]
+  \item Data: 4{,}783{,}154 items, 256-dim embeddings (parquet);
+        train 4{,}304{,}839, validation 478{,}315 (10\% split, seed 42).
+  \item Architecture: encoder $256 \to \cdots \to 64$, decoder symmetric,
+        $L=3$ levels, $K=1024$ codes per level, latent dim 64.
+  \item Joint training (arms `\texttt{rqvae}` and `\texttt{warmup}`): 25 epochs,
+        batch 4096, Adam lr $5\times10^{-4}$, 2000-step linear warmup, cosine
+        decay to 1\% floor, $\beta = 0.1$, trunc-normal codebook init,
+        dead-code revival enabled (revive codes used $<10\%$ of mean usage,
+        checked every 500 steps, until 60\% of the step budget).
+        The `\texttt{warmup}` arm prepends 5 reconstruction-only epochs and
+        restarts the cosine schedule with a 200-step ramp at the handoff.
+  \item DRQ arm: stage 1 uses the same optimizer schedule for 25 epochs with
+        $\lambda = 0$; stage 2 fits FAISS GPU $k$-means (50 iterations,
+        3 restarts) per level over the full frozen latent pool, then assigns
+        all items level by level through the residual cascade
+        \eqref{eq:rq}.
+  \item Diagnostics are computed identically for every arm on the full 4.78M
+        index, after training. SIDs themselves never depend on any diagnostic
+        parameter (in particular the kernel width $\sigma$ in
+        section~\ref{sec:overlap} is a post-hoc metric choice only).
+\end{itemize}
+
+\section{The metrics}
+
+This is the section to read before opening any diagnostics file. Metrics come in
+three tiers: per-level codebook health, tuple-level injectivity, and
+reconstruction. The full pipeline claim of DRQ is that better per-level health
+and better geometry reduce collisions; checking \emph{which} tier moved is how
+you test that claim.
+
+\emph{In plain terms:} three questions, in order. \emph{Are all the bins being
+used?} (per-level metrics: a bin nobody puts anything in, or a bin holding a
+third of everything, is wasted capacity). \emph{Are the bins genuinely
+different, or do some sit on top of each other?} (geometry metrics). \emph{Do
+products end up with private barcodes in the end?} (tuple metrics: the business
+number). Reconstruction asks whether the barcodes still describe the product
+accurately, the quality tax of the whole exercise.
+
+\subsection{Per-level (marginal) metrics}
+
+For level $\ell$, let $\pi_i$ be the fraction of the 4.78M items assigned to
+code $i$, over $K = 1024$ codes.
+
+\begin{itemize}[nosep]
+  \item \textbf{used codes / dead \%}: $|\{i : \pi_i > 0\}|$. Necessary but not
+  sufficient: a level can use every code and still be useless jointly.
+  \item \textbf{entropy / perplexity}: $H_\ell = -\sum_i \pi_i \log \pi_i$ (nats),
+  $\mathrm{perp}_\ell = e^{H_\ell}$. Perplexity reads as ``effective number of
+  balanced codes''; 1024 is the perfectly uniform ceiling.
+  \item \textbf{Gini} and \textbf{max\_freq}: inequality of the usage distribution;
+  0 and $1/K$ are uniform.
+  \item \textbf{distribution floor}: $\sum_i \pi_i^2$, the self-collision mass of
+  the level's own assignment distribution if that level were the whole ID.
+  \item \textbf{participation ratio}: $1 / \sum_i \pi_i^2$, the inverse of the
+  floor. Pure usage-balance view of capacity; ignores centroid positions.
+\end{itemize}
+
+\emph{In plain terms:} this tier answers ``is every level pulling its weight?''.
+Healthy values here look like a warehouse where every aisle and every shelf is
+occupied roughly equally. What these metrics \emph{cannot} see is whether the
+same handful of choices repeat across levels; that is what the joint tier is
+for.
+
+\subsection{Overlap rate and effective codes $\Keff$ (geometry)}
+\label{sec:overlap}
+
+Two codes that are used but sit on top of each other are one code in disguise.
+DRQ measures this with the \emph{expected overlap rate}, the probability that an
+item and an independent second draw from the same level land within each other's
+Gaussian kernel (bandwidth $\sigma$):
+\begin{equation}
+  \Opi^{(\ell)}(\sigma) \;=\; \sum_{i}\sum_{j} \pi_i \pi_j\,
+    \exp\!\Bigl(-\frac{\|c_i - c_j\|^2}{4\sigma^2}\Bigr),
+  \qquad
+  \Keff^{(\ell)} \;=\; \frac{1}{\Opi^{(\ell)}} .
+  \label{eq:opiq}
+\end{equation}
+It decomposes exactly into the two failure modes:
+\begin{equation}
+  \underbrace{\Opi = \sum_i \pi_i^2}_{\text{distribution floor}}
+  \;+\;
+  \underbrace{\sum_{i\neq j} \pi_i\pi_j \exp\!\bigl(-\|c_i-c_j\|^2/4\sigma^2\bigr)}
+  _{\text{geometry cross-overlap}} .
+  \label{eq:split}
+\end{equation}
+The floor term is usage skew (fixable by any balance mechanism); the cross term
+is codebook geometry (centroids crowding the manifold), which is what DRQ
+stage-2 is argued to fix. In the JSON, \texttt{distribution\_floor} and
+\texttt{geometry\_cross\_overlap} are reported separately.
+
+$\sigma$ is chosen per level automatically: 0.1 $\times$ the median
+nearest-neighbour distance among used centroids
+(\texttt{kernel\_sigma} in the JSON). The diagnostics also include a
+\texttt{sigma\_scan} over $\sigma$ at $\times0.25, 0.5, 1, 2, 4$ of that auto
+value. Read the scan as ``how close do centroids have to be before they start
+counting as duplicates'': $\Keff$ should stay near the participation ratio at
+small-to-moderate $\sigma$ and collapse as $\sigma$ grows past the typical
+centroid spacing. A codebook with real geometric crowding collapses early in
+the scan; a spread one holds $\Keff \approx$ PR until the kernel covers
+half the space. Comparing the two arms' scan curves is the cleanest geometry
+test in the data.
+
+\emph{In plain terms:} this asks whether distinct bin numbers really mark
+distinct regions, or whether two bins cover the same territory and split it
+arbitrarily. The scan varies the notion of ``close'' (from very strict to quite
+forgiving) and watches how many bins remain distinct. Bins that merge under a
+lax definition were nearly duplicates all along.
+
+\subsection{Tuple-level (joint) metrics}
+
+These measure what the recommender actually sees, the map item $\to$ $(c_1,c_2,c_3)$.
+
+\begin{itemize}[nosep]
+  \item \textbf{collision\_rate} $= 1 - U/N$, with $U$ the number of unique
+  full tuples and $N$ the item count. The headline metric.
+  \item \textbf{n\_unique\_tuples}, \textbf{max\_collision\_bucket} (largest
+  group of items sharing one tuple; a tail metric), \textbf{mean\_collision\_bucket},
+  \textbf{items\_in\_collision} (fraction of items that are in any shared bucket).
+  \item \textbf{joint\_entropy / joint\_perplexity}: entropy of the empirical
+  distribution over tuples, and $e^H$. Joint perplexity is the size of the
+  effectively-used tuple space.
+  \item \textbf{effective\_cells}: the same relation inverted. Given $U/N$, find
+  $x$ with $(1 - e^{-x})/x = U/N$ and report $M_{\mathrm{eff}} = N/x$. It
+  answers ``how many uniformly-sized tuple cells would produce this many
+  collisions?''.
+  \item \textbf{redundancy\_bits} $= \bigl(\sum_\ell H_\ell\bigr) - H_{\mathrm{joint}}$
+  (converted to bits). How much of the nominal $3 \times \log_2 1024 = 30$ bits
+  of tuple space is wasted because levels repeat each other's information.
+  A perfectly independent cascade keeps redundancy low; strong residual
+  correlation between levels raises it.
+  \item \textbf{prefix\_uniqueness}[d]: unique fraction of length-$d$ prefixes.
+  $d=1$ is bounded by $K/N$; the $d=2 \to d=3$ jump shows where collisions are
+  decided. If depth-3 prefix uniqueness $\approx$ collision-implied uniqueness,
+  the last level is doing the de-duplicating work (or failing at it).
+\end{itemize}
+
+\emph{In plain terms:} this is the tier the business actually buys: what
+fraction of the catalog has a private barcode (collision rate), how bad the
+worst pile-up is (max bucket), and how large the effectively-used barcode space
+is (joint perplexity, effective cells). Redundancy measures how many digits are
+spent saying things an earlier digit already said.
+
+\subsection{Reconstruction metrics}
+
+\begin{itemize}[nosep]
+  \item \textbf{val recon (continuous)}: $\|x - D(E(x))\|^2$ on held-out items,
+  the AE quality ceiling.
+  \item \textbf{val recon (quantized)}: $\|x - D(\hat z)\|^2$ through the codes.
+  \item \textbf{quantization cost}: quantized $-$ continuous, the price paid for
+  discretization. This is the fairness axis: a scheme can improve collisions
+  while paying with reconstruction. All terms are summed over the 256 dims and
+  averaged over the batch.
+\end{itemize}
+
+\emph{In plain terms:} does the barcode system still describe products well?
+The quantization cost is the price of discretization: schemes that win on
+collisions can quietly pay with worse descriptions, so read this tier next to
+the collision tier, never alone.
+
+\subsection{How to think about the numbers}
+
+A sizing sanity check before looking at any arm: if items landed
+\emph{uniformly at random} in $M$ tuple cells, the expected unique fraction is
+\begin{equation}
+  \frac{U}{N} \;=\; \frac{1 - e^{-x}}{x}, \qquad x = \frac{N}{M}.
+  \label{eq:birthday}
+\end{equation}
+With nominal $M = 1024^3$, $x \approx 0.0045$ and \eqref{eq:birthday} predicts
+$U/N \approx 0.998$: uniform use of the nominal space would be essentially
+collision-free. Any measured uniqueness far below that comes from either
+uneven per-level marginals (bounded by $\prod_\ell \Keff^{(\ell)}$ at small
+$\sigma$) or joint concentration (redundancy, prefix curves), so the three
+tiers of metrics above are exactly the three candidate explanations. Questions
+worth answering from the logs: which tier differs between arms; does the
+$\Keff$ ladder $\mathrm{rqvae} < \mathrm{warmup} < \mathrm{drq}$ line up with
+the collision ladder; and what does \eqref{eq:birthday} say about each arm's
+effective cells.
+
+\section{Results}
+
+Raw numbers only. All three arms share the configuration of section 3 and are
+scored by the same diagnostics, including the multi-$\sigma$ scan; the baseline
+rerun reproduced its earlier numbers exactly (same seed).
+
+\subsection{Tuple-level}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+metric & rqvae & warmup & drq \\
+\midrule
+collision\_rate           & 0.28330 & 0.28635 & 0.25726 \\
+unique tuples             & 3{,}428{,}074 & 3{,}413{,}491 & 3{,}552{,}635 \\
+max collision bucket      & 564    & 317    & 196    \\
+mean collision bucket     & 1.395  & 1.401  & 1.346  \\
+items in collision        & 1{,}942{,}728 & 1{,}958{,}503 & 1{,}822{,}616 \\
+joint perplexity          & 2{,}621{,}981 & 2{,}600{,}081 & 2{,}873{,}590 \\
+effective cells           & 6{,}758{,}007 & 6{,}666{,}973 & 7{,}622{,}188 \\
+redundancy (bits)         & 8.315  & 8.341  & 8.272  \\
+prefix uniqueness $d{=}2$ & 0.1161 & 0.1145 & 0.1166 \\
+prefix uniqueness $d{=}3$ & 0.7167 & 0.7136 & 0.7427 \\
+\bottomrule
+\end{tabular}
+\caption{Tuple-level diagnostics, $N = 4{,}783{,}154$, $L=3$, $K=1024$, seed 42.}
+\end{table}
+
+\subsection{Per-level}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llrrrr}
+\toprule
+arm & level & perp & Gini & $\Keff$ (auto $\sigma$) & dist.\ floor \\
+\midrule
+rqvae  & 0 & 951 & 0.212 & 887.5 & 0.00113 \\
+rqvae  & 1 & 912 & 0.268 & 821.4 & 0.00122 \\
+rqvae  & 2 & 962 & 0.193 & 902.6 & 0.00111 \\
+\midrule
+warmup & 0 & 957 & 0.203 & 899.2 & 0.00111 \\
+warmup & 1 & 911 & 0.268 & 820.9 & 0.00122 \\
+warmup & 2 & 967 & 0.186 & 910.6 & 0.00110 \\
+\midrule
+drq    & 0 & 975 & 0.173 & 930.3 & 0.00108 \\
+drq    & 1 & 950 & 0.213 & 887.8 & 0.00113 \\
+drq    & 2 & 958 & 0.195 & 910.2 & 0.00110 \\
+\bottomrule
+\end{tabular}
+\caption{Marginal health per level; all levels use 1024/1024 codes in all arms.}
+\end{table}
+
+\subsection{Reconstruction}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+& rqvae & warmup & drq \\
+\midrule
+val recon (continuous) & 0.01794 & 0.01613 & 0.01305 \\
+val recon (quantized)  & 0.08262 & 0.08193 & 0.10130 \\
+quantization cost      & 0.0647  & 0.0658  & 0.0883 \\
+\bottomrule
+\end{tabular}
+\caption{Validation reconstruction (sum over 256 dims, mean over batch). These
+three values are printed in `\texttt{run.log}`; they are not part of the JSON.}
+\end{table}
+
+\subsection{Sigma scan ($\Keff$ under widening kernels)}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llrrrrr}
+\toprule
+arm & level & PR & $\times0.25$ & $\times0.5$ & $\times1$ & $\times4$ \\
+\midrule
+rqvae  & 0 & 888 & 888 & 888 & 888 & 279 \\
+rqvae  & 1 & 821 & 821 & 821 & 821 & 37 \\
+rqvae  & 2 & 903 & 903 & 903 & 903 & 22 \\
+\midrule
+warmup & 0 & 899 & 899 & 899 & 899 & 279 \\
+warmup & 1 & 821 & 821 & 821 & 821 & 36 \\
+warmup & 2 & 911 & 911 & 911 & 911 & 22 \\
+\midrule
+drq    & 0 & 930 & 931 & 930 & 930 & 218 \\
+drq    & 1 & 888 & 888 & 888 & 888 & 51 \\
+drq    & 2 & 910 & 910 & 910 & 910 & 26 \\
+\bottomrule
+\end{tabular}
+\caption{$\Keff^{(\ell)}(\sigma)$ at $\sigma$ = mult $\times$ auto value
+(auto $\sigma\approx$ 0.06 / 0.03 / 0.02 for levels 0/1/2 in all arms).
+PR column is the participation ratio, the usage-only ceiling that
+$\Keff\le$PR can never exceed; the $\times2$ column is omitted for space, its
+values: rqvae 872/703/782, warmup 883/699/800,
+drq 910/826/846. At the auto value the geometry cross-overlap term is
+$\le 2.5\times10^{-9}$ for every arm and level.}
+\end{table}
+
+The `\texttt{drq}` column shows the same collision-rate reduction direction
+reported for DRQ-VAE in its paper (0.229 $\to$ 0.075 on the paper's corpus and
+codebook sizes; ours is 0.283 $\to$ 0.257 on 4.78M items at 3$\times$1024).
+Whether that is the whole story, or which tier of the metrics explains it, is
+the open question for the group.
+
+\section{Files you will receive}
+
+\begin{itemize}[nosep]
+  \item `\texttt{logs/rqvae\textless jobid\textgreater.out}`: full stdout,
+  including the per-epoch table and the handoff line for `\texttt{warmup}`.
+  \item `\texttt{arm\_\{rqvae,warmup,drq\}\_diagnostics.json}`: the scored tiers
+  of section 4. Keys: `\texttt{tuples}` (joint), `\texttt{stage}` (per level,
+  with `\texttt{sigma\_scan}`), `\texttt{prefix\_uniqueness}`,
+  `\texttt{redundancy\_bits}`. Reconstruction values are in `\texttt{run.log}`.
+  \item `\texttt{comparison*.json}`: pairwise tables built by the script when
+  two arm JSONs share a run folder.
+  \item `\texttt{arm\_*\_index.json}`: item\_id $\to$ SID tuples, usable for
+  any custom collision analysis.
+  \item `\texttt{train\_drq\_vs\_rqvae.py}`: exact code that produced the run.
+\end{itemize}
+
+\section{References}
+
+\begin{enumerate}[nosep,leftmargin=*]
+  \item DRQ: \emph{Rethinking Semantic ID Construction for Generative
+        Recommendation} (arXiv:2606.01844). Basis of the `\texttt{drq}' arm and
+        the overlap metrics.
+  \item TIGER: \emph{Recommender Systems with Generative Retrieval}
+        (arXiv:2305.05065). The RQ-VAE SID recipe being improved on.
+  \item GRID handbook (arXiv:2507.22224). Reports RQ-VAE's weakness against
+        simpler alternatives; motivates this study.
+  \item QuaSID (arXiv:2603.00632) and FORGE (arXiv:2509.20904). Post-hoc
+        collision-handling alternatives.
+\end{enumerate}
+
+\end{document}

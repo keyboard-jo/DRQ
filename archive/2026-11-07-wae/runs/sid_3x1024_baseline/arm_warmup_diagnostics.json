@@ -1,0 +1,218 @@
+{
+  "stage": [
+    {
+      "stage": 0,
+      "total_codes": 1024,
+      "used_codes": 1024,
+      "dead_code_pct": 0.0,
+      "max_freq": 0.0027036553704940297,
+      "entropy": 6.864214897155762,
+      "perplexity": 957.3938919964298,
+      "gini": 0.2034526840514126,
+      "utilisation_deficit": 0.009703120827723621,
+      "distribution_floor": 0.0011120615527033806,
+      "participation_ratio": 899.2308002817263,
+      "overlap_rate": 0.001112052472308278,
+      "effective_codes": 899.2381428947398,
+      "geometry_cross_overlap": 0.0,
+      "kernel_sigma": 0.06046956777572632,
+      "sigma_scan": [
+        {
+          "sigma_mult": 0.25,
+          "overlap_rate": 0.001111889025196433,
+          "effective_codes": 899.3703304368292,
+          "distribution_floor": 0.0011120615527033806,
+          "geometry_cross_overlap": 0.0,
+          "participation_ratio": 899.2308002817263,
+          "sigma": 0.01511739194393158
+        },
+        {
+          "sigma_mult": 0.5,
+          "overlap_rate": 0.0011120183626189828,
+          "effective_codes": 899.2657258328347,
+          "distribution_floor": 0.0011120615527033806,
+          "geometry_cross_overlap": 0.0,
+          "participation_ratio": 899.2308002817263,
+          "sigma": 0.03023478388786316
+        },
+        {
+          "sigma_mult": 1.0,
+          "overlap_rate": 0.001112052472308278,
+          "effective_codes": 899.2381428947398,
+          "distribution_floor": 0.0011120615527033806,
+          "geometry_cross_overlap": 0.0,
+          "participation_ratio": 899.2308002817263,
+          "sigma": 0.06046956777572632
+        },
+        {
+          "sigma_mult": 2.0,
+          "overlap_rate": 0.0011329096741974354,
+          "effective_codes": 882.6829029493548,
+          "distribution_floor": 0.0011120615527033806,
+          "geometry_cross_overlap": 2.0848121494054794e-05,
+          "participation_ratio": 899.2308002817263,
+          "sigma": 0.12093913555145264
+        },
+        {
+          "sigma_mult": 4.0,
+          "overlap_rate": 0.003589844098314643,
+          "effective_codes": 278.56362911957075,
+          "distribution_floor": 0.0011120615527033806,
+          "geometry_cross_overlap": 0.0024777825456112623,
+          "participation_ratio": 899.2308002817263,
+          "sigma": 0.24187827110290527
+        }
+      ]
+    },
+    {
+      "stage": 1,
+      "total_codes": 1024,
+      "used_codes": 1024,
+      "dead_code_pct": 0.0,
+      "max_freq": 0.003140187416085704,
+      "entropy": 6.81424617767334,
+      "perplexity": 910.7297285559891,
+      "gini": 0.26822835380953647,
+      "utilisation_deficit": 0.01691208320740989,
+      "distribution_floor": 0.001218208228237927,
+      "participation_ratio": 820.8777258436733,
+      "overlap_rate": 0.0012182099744677544,
+      "effective_codes": 820.8765491654326,
+      "geometry_cross_overlap": 1.7462298274040222e-09,
+      "kernel_sigma": 0.031571388244628906,
+      "sigma_scan": [
+        {
+          "sigma_mult": 0.25,
+          "overlap_rate": 0.001218136167153716,
+          "effective_codes": 820.9262863745269,
+          "distribution_floor": 0.001218208228237927,
+          "geometry_cross_overlap": 0.0,
+          "participation_ratio": 820.8777258436733,
+          "sigma": 0.007892847061157227
+        },
+        {
+          "sigma_mult": 0.5,
+          "overlap_rate": 0.0012181901838630438,
+          "effective_codes": 820.8898850496943,
+          "distribution_floor": 0.001218208228237927,
+          "geometry_cross_overlap": 0.0,
+          "participation_ratio": 820.8777258436733,
+          "sigma": 0.015785694122314453
+        },
+        {
+          "sigma_mult": 1.0,
+          "overlap_rate": 0.0012182099744677544,
+          "effective_codes": 820.8765491654326,
+          "distribution_floor": 0.001218208228237927,
+          "geometry_cross_overlap": 1.7462298274040222e-09,
+          "participation_ratio": 820.8777258436733,
+          "sigma": 0.031571388244628906
+        },
+        {
+          "sigma_mult": 2.0,
+          "overlap_rate": 0.0014304197393357754,
+          "effective_codes": 699.0954979860362,
+          "distribution_floor": 0.001218208228237927,
+          "geometry_cross_overlap": 0.00021221151109784842,
+          "participation_ratio": 820.8777258436733,
+          "sigma": 0.06314277648925781
+        },
+        {
+          "sigma_mult": 4.0,
+          "overlap_rate": 0.0275680273771286,
+          "effective_codes": 36.27390477817194,
+          "distribution_floor": 0.001218208228237927,
+          "geometry_cross_overlap": 0.026349819148890674,
+          "participation_ratio": 820.8777258436733,
+          "sigma": 0.12628555297851562
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "total_codes": 1024,
+      "used_codes": 1024,
+      "dead_code_pct": 0.0,
+      "max_freq": 0.002451938616235229,
+      "entropy": 6.874025344848633,
+      "perplexity": 966.832577860333,
+      "gini": 0.18605646945378518,
+      "utilisation_deficit": 0.008287772404183102,
+      "distribution_floor": 0.0010981583036482334,
+      "participation_ratio": 910.6155248090025,
+      "overlap_rate": 0.0010981560917571187,
+      "effective_codes": 910.6173589584494,
+      "geometry_cross_overlap": 0.0,
+      "kernel_sigma": 0.02325737476348877,
+      "sigma_scan": [
+        {
+          "sigma_mult": 0.25,
+          "overlap_rate": 0.0010981173254549503,
+          "effective_codes": 910.6495060404403,
+          "distribution_floor": 0.0010981583036482334,
+          "geometry_cross_overlap": 0.0,
+          "participation_ratio": 910.6155248090025,
+          "sigma": 0.005814343690872192
+        },
+        {
+          "sigma_mult": 0.5,
+          "overlap_rate": 0.0010981480590999126,
+          "effective_codes": 910.6240198791055,
+          "distribution_floor": 0.0010981583036482334,
+          "geometry_cross_overlap": 0.0,
+          "participation_ratio": 910.6155248090025,
+          "sigma": 0.011628687381744385
+        },
+        {
+          "sigma_mult": 1.0,
+          "overlap_rate": 0.0010981560917571187,
+          "effective_codes": 910.6173589584494,
+          "distribution_floor": 0.0010981583036482334,
+          "geometry_cross_overlap": 0.0,
+          "participation_ratio": 910.6155248090025,
+          "sigma": 0.02325737476348877
+        },
+        {
+          "sigma_mult": 2.0,
+          "overlap_rate": 0.0012498835567384958,
+          "effective_codes": 800.0745306302344,
+          "distribution_floor": 0.0010981583036482334,
+          "geometry_cross_overlap": 0.0001517252530902624,
+          "participation_ratio": 910.6155248090025,
+          "sigma": 0.04651474952697754
+        },
+        {
+          "sigma_mult": 4.0,
+          "overlap_rate": 0.04445783793926239,
+          "effective_codes": 22.493221585948117,
+          "distribution_floor": 0.0010981583036482334,
+          "geometry_cross_overlap": 0.04335967963561416,
+          "participation_ratio": 910.6155248090025,
+          "sigma": 0.09302949905395508
+        }
+      ]
+    }
+  ],
+  "tuples": {
+    "n_items": 4783154,
+    "tuple_length": 3,
+    "n_unique_tuples": 3413491,
+    "uniqueness_ratio": 0.7136485674515184,
+    "collision_rate": 0.2863514325484816,
+    "items_in_collision_frac": 0.4094584870150533,
+    "items_in_collision": 1958503,
+    "n_colliding_tuples": 588840,
+    "max_collision_bucket": 317,
+    "mean_collision_bucket": 1.4012499227330613,
+    "joint_entropy": 14.771053314208984,
+    "joint_perplexity": 2600081.4104394354,
+    "effective_cells": 6666973
+  },
+  "prefix_uniqueness": [
+    0.00021408468136296677,
+    0.11446923933454788,
+    0.7136485674515184
+  ],
+  "redundancy_nats": 5.78143310546875,
+  "redundancy_bits": 8.340844870491045
+}
