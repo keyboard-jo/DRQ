@@ -1,0 +1,42 @@
+[scan] /home/jksulaiman/NZ5/make_data/archive/2026-10-13-ei-1/test_output/stage1_pilot/item_embeddings.parquet: 4,783,154 rows, embedding col 'embedding', id col 'item_id'
+  [scan] 250,000/4,783,154 rows (30s)
+  [scan] 500,000/4,783,154 rows (56s)
+  [scan] 750,000/4,783,154 rows (83s)
+  [scan] 1,000,000/4,783,154 rows (110s)
+  [scan] 1,250,000/4,783,154 rows (141s)
+  [scan] 1,500,000/4,783,154 rows (168s)
+  [scan] 1,750,000/4,783,154 rows (195s)
+  [scan] 2,000,000/4,783,154 rows (222s)
+  [scan] 2,250,000/4,783,154 rows (251s)
+  [scan] 2,500,000/4,783,154 rows (277s)
+  [scan] 2,750,000/4,783,154 rows (303s)
+  [scan] 3,000,000/4,783,154 rows (330s)
+  [scan] 3,250,000/4,783,154 rows (362s)
+  [scan] 3,500,000/4,783,154 rows (389s)
+  [scan] 3,750,000/4,783,154 rows (415s)
+  [scan] 4,000,000/4,783,154 rows (443s)
+  [scan] 4,250,000/4,783,154 rows (472s)
+  [scan] 4,500,000/4,783,154 rows (498s)
+  [scan] 4,750,000/4,783,154 rows (523s)
+  [scan] 4,783,154/4,783,154 rows (527s)
+[scan] hashed 4,783,154 rows, dim=256, in 526.8s
+
+=== exact-duplicate scan ===
+items:                 4,783,154
+distinct embeddings:   4,765,992
+duplicate groups:      7,186
+items in dup groups:   24,348  (0.5090% of corpus)
+duplicate pairs:       50,496
+largest group size:    34
+size distribution:     >=2: 7,186, >=3: 3,627, >=5: 1,293, >=10: 203
+
+=== collision mass vs duplicate floor (/home/jksulaiman/5015-2/archive/2026-11-07-drq/runs/sid_3x1024_baseline/arm_drq_index.json, 20s to load) ===
+items in index:        4,783,154
+unique tuples:         3,552,635
+collision mass (N-U):  1,230,519  (25.7261%)
+dup groups fully in one SID bucket: 7,186 / 7,186
+dup groups split across buckets:    0  (identical rows, different codes: tie-break or index mismatch)
+irreducible collision mass:           17,162  (1.39% of observed collision mass)
+=> reducible ceiling (any tokenizer): 1,213,357
+
+[scan] wrote h4_drq_report.json
