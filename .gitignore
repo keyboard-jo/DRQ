@@ -137,3 +137,7 @@ archive/**/arm_*_index.json
 # kept local, not shared
 REFERENCES.md
 TODO.md
+
+# arms analysis writeup kept local, not shared
+docs/arms-analysis.tex
+docs/arms-analysis.pdf

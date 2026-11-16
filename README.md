@@ -1,4 +1,4 @@
-# RQ-VAE Semantic ID Injectivity
+# RQ-VAE Semantic ID Injectivity (ONGOING REPO)
 
 This repo investigates a single, well-defined failure of RQ-VAE semantic IDs:
 **collisions** — multiple distinct items mapping to the same SID, which breaks
@@ -59,4 +59,6 @@ against the `rqvae` baseline are written to `comparison*.json`.
 - `references/train_rqvae_official_implementation.py` — upstream TIGER
   reference implementation (Gumbel-Softmax).
 
-See `REFERENCES.md` for the reading list (DRQ first).
+## Main References
+- 1. DRQ — Decoupled Residual Quantization for Robust Semantic IDs (arXiv:2606.01844)
+- 2. TIGER — Recommender Systems with Generative Retrieval (arXiv:2305.05065)
