@@ -44,14 +44,25 @@ finding, not a failed experiment.
   restart (200-step handoff ramp). Isolates the latent-geometry phase as the
   mechanism: sits between `rqvae` and `drq` on the coupling axis.
 - `drq` — separate training: continuous VAE, then hierarchical k-means on
-  frozen latents.
+  frozen latents. Stage 1 can add the co-click InfoNCE (`--drq_lambda 0.3`,
+  DRQ-VAE+CL in the paper).
+- `rqvae_cl` — control for CL: the same InfoNCE added to the *joint* baseline
+  loss (`--rqvae_lambda 0.3`), so any DRQ+CL win can be separated from what
+  co-click contrastive learning gives the encoder alone. Pairs come from
+  `references/build_coclick_pairs.py` (co-click matrix + `item_a,item_b`
+  export over the digr_data training split, same counting convention as
+  `references/baselines_digr.py`).
 
 Run one with `--arm all` (or per arm with the same `--run_name`); comparisons
-against the `rqvae` baseline are written to `comparison*.json`.
+against the `rqvae` baseline are written to `comparison*.json`. `--arm cl`
+runs `rqvae` + `rqvae_cl` as a pair.
 
 ## Layout
 
-- `train_drq_vs_rqvae.py` — the three-arm injectivity experiment.
+- `train_drq_vs_rqvae.py` — the injectivity experiment (rqvae / drq / warmup /
+  rqvae_cl arms).
+- `references/build_coclick_pairs.py` — co-click CSR matrix + positive-pairs
+  export from digr_data (feeds `--drq_pairs`).
 - `references/rqvae_grid.py` — ablation-arm presets + diagnostics
   (`effective_cells`, `tuple_redundancy`, `utilisation_deficit`).
 - `references/train_rqvae_my_implementation.py` — self-contained RQ-VAE

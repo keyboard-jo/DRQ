@@ -551,3 +551,76 @@ def test_build_comparison_generic_baseline_candidate_keys():
     assert set(cmp) == {"baseline", "candidate"}
     assert cmp["baseline"]["stage_headline"]["level0_perplexity"] == 10.0
     assert cmp["candidate"]["tuples"]["joint_perplexity"] == 20.0
+
+
+# --------------------------------------------------------------------------- #
+# rqvae_cl arm: joint RQ-VAE + co-click InfoNCE
+# --------------------------------------------------------------------------- #
+def _cl_arm_args(**over):
+    ns = _warmup_arm_args()
+    ns.rqvae_lambda = 0.3
+    ns.drq_pairs = None
+    ns.drq_tau = 0.1
+    ns.drq_pair_batch = 8
+    for k, v in over.items():
+        setattr(ns, k, v)
+    return ns
+
+
+def test_train_rqvae_cl_requires_pairs():
+    emb = torch.randn(16, 8)
+    loader = DataLoader(emb, batch_size=8)
+    m = t.RQVAE(input_dim=8, hidden_dim=4, codebook_sizes=[8], beta=0.1)
+    with pytest.raises(ValueError):
+        t.train_rqvae(m, loader, loader, epochs=1, lr=1e-3, warmup_steps=1,
+                      min_lr_ratio=0.1, device=torch.device("cpu"),
+                      logger=_logger, dead_code_fix=False,
+                      cl_lambda=0.3)
+
+
+def test_train_rqvae_cl_runs_with_pairs():
+    torch.manual_seed(0)
+    emb = torch.randn(32, 8)
+    loader = DataLoader(emb, batch_size=8)
+    pairs = torch.tensor([[i, (i + 1) % 32] for i in range(32)])
+    m = t.RQVAE(input_dim=8, hidden_dim=4, codebook_sizes=[8, 8], beta=0.1)
+    t.train_rqvae(m, loader, loader, epochs=1, lr=1e-3, warmup_steps=1,
+                  min_lr_ratio=0.1, device=torch.device("cpu"),
+                  logger=_logger, dead_code_fix=False,
+                  embeddings=emb, pairs=pairs, cl_lambda=0.3, pair_batch=8)
+
+
+def test_rqvae_cl_arm_end_to_end_small(tmp_path):
+    torch.manual_seed(0)
+    ds = _FakeDataset(torch.randn(32, 16))
+    import pandas as pd
+    p = tmp_path / "pairs.csv"
+    pd.DataFrame({"item_a": [str(i) for i in range(31)],
+                  "item_b": [str(i + 1) for i in range(31)]}).to_csv(p, index=False)
+    args = _cl_arm_args(drq_pairs=str(p))
+    idx = np.arange(32)
+    res = t.run_rqvae_arm(ds, idx[:24], idx[24:], [8, 8], args, _logger,
+                          name="rqvae_cl")
+    assert res["indices"].shape == (32, 2)
+
+
+def test_rqvae_cl_arm_needs_lambda_and_pairs():
+    torch.manual_seed(0)
+    ds = _FakeDataset(torch.randn(32, 16))
+    idx = np.arange(32)
+    with pytest.raises(ValueError):
+        t.run_rqvae_arm(ds, idx[:24], idx[24:], [8, 8],
+                        _cl_arm_args(rqvae_lambda=0.0), _logger, name="rqvae_cl")
+    with pytest.raises(ValueError):
+        t.run_rqvae_arm(ds, idx[:24], idx[24:], [8, 8],
+                        _cl_arm_args(drq_pairs=None), _logger, name="rqvae_cl")
+
+
+def test_cl_lambda_off_for_plain_and_warmup_arms():
+    # cl must NOT leak into the plain rqvae / warmup arms even if rqvae_lambda set
+    torch.manual_seed(0)
+    ds = _FakeDataset(torch.randn(32, 16))
+    idx = np.arange(32)
+    args = _cl_arm_args(rqvae_lambda=5.0, drq_pairs=None)
+    res = t.run_rqvae_arm(ds, idx[:24], idx[24:], [8, 8], args, _logger)
+    assert res["indices"].shape == (32, 2)

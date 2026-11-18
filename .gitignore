@@ -141,3 +141,13 @@ TODO.md
 # arms analysis writeup kept local, not shared
 docs/arms-analysis.tex
 docs/arms-analysis.pdf
+
+# groupmate analyses, kept local (not shared via this repo)
+docs/Analysis1.pdf
+docs/Analysis2.pdf
+# research-questions PPT source, kept local
+docs/research-questions.tex
+docs/research-questions.pdf
+
+# Explainer notebook (untracked deliverable)
+metrics_explained.ipynb

@@ -98,6 +98,11 @@ KMEANS_FIT_SAMPLES = 1_000_000
 DRQ_LAMBDA = 0.0
 DRQ_TAU = 0.1            # InfoNCE temperature: not stated in the paper we have; assumed
 DRQ_PAIR_BATCH = 1024
+# rqvae_cl arm: same contrastive weight on the JOINT arm (paper pairs DRQ-VAE+CL
+# with plain DRQ-VAE; this arm asks the same question of the joint baseline).
+RQVAE_CL_LAMBDA = 0.0
+# mi arm: cross-level mutual-information penalty weight (TODO task 6); 0 = off.
+MI_PENALTY_DEFAULT = 0.0
 KMEANS_N_INIT = 3
 KMEANS_NITER = 50
 # Metric-only sigma sweep (see sigma_scan): K_eff evaluated at mult * auto_sigma
@@ -234,6 +239,55 @@ def info_nce(za: torch.Tensor, zb: torch.Tensor, tau: float) -> torch.Tensor:
     return 0.5 * (F.cross_entropy(logits, labels) + F.cross_entropy(logits.t(), labels))
 
 
+def soft_mi_penalty(logits_list: list[torch.Tensor], eps: float = 1e-12) -> torch.Tensor:
+    """Sum of I(c_d ; c_{d+1}) over adjacent levels, on SOFT assignment probs.
+
+    Hard argmax codes carry no gradient, so the penalty uses softmax(logits)
+    (negative squared distances up to a per-row constant) as the differentiable
+    surrogate. joint = (1/N) sum_n p_d(n) outer p_{d+1}(n); MI in nats.
+    Rationale: if level d+1 just restates level d, the residual quantization
+    wastes address space (total correlation of the tuple ~8.3 bits) -- the
+    permutation control showed exactly this coupling causes the collisions.
+    """
+    if len(logits_list) < 2:
+        return logits_list[0].new_zeros(())
+    total = logits_list[0].new_zeros(())
+    for la, lb in zip(logits_list, logits_list[1:]):
+        pa = la.softmax(dim=-1)
+        pb = lb.softmax(dim=-1)
+        joint = pa.t() @ pb / pa.shape[0]                    # (Ka, Kb)
+        marg_a = pa.mean(dim=0)
+        marg_b = pb.mean(dim=0)
+        indep = marg_a[:, None] * marg_b[None, :]
+        total = total + (joint * (torch.log(joint + eps) - torch.log(indep + eps))).sum()
+    return total
+
+
+def empirical_mi(indices: torch.Tensor, eps: float = 0.0) -> float:
+    """Sum of I(c_d ; c_{d+1}) in nats from HARD codes (detached, reporting).
+
+    Counts are on observed (K_obs) support, so MI(b; b) = H(b) exactly; the
+    eps>0 floor is only for tests that need full-support conventions.
+    """
+    total = 0.0
+    for d in range(indices.shape[1] - 1):
+        a = indices[:, d].long()
+        b = indices[:, d + 1].long()
+        ka = int(a.max().item()) + 1
+        kb = int(b.max().item()) + 1
+        joint = torch.bincount(a * kb + b, minlength=ka * kb)
+        joint = joint.reshape(ka, kb).double() / a.numel()
+        nz = joint > 0
+        if eps > 0:
+            joint = joint + eps
+            nz = joint > 0
+        ma = joint.sum(dim=1, keepdim=True)
+        mb = joint.sum(dim=0, keepdim=True)
+        ratio = joint[nz] / (ma.expand_as(joint)[nz] * mb.expand_as(joint)[nz])
+        total += float((joint[nz] * torch.log(ratio)).sum())
+    return total
+
+
 def load_positive_pairs(path: str, item_ids: list[str], logger: logging.Logger) -> torch.Tensor:
     """Read (item_a, item_b) positive pairs and map item_id -> dataset row.
 
@@ -359,16 +413,20 @@ class ResidualQuantizer(nn.Module):
             nn.init.trunc_normal_(cb, std=0.02, a=-0.04, b=0.04)
             self.codebooks.append(cb)
 
-    def forward(self, z: torch.Tensor, return_residuals: bool = False) -> dict:
+    def forward(self, z: torch.Tensor, return_residuals: bool = False,
+                return_logits: bool = False) -> dict:
         remainder = z
         quantized_sum = torch.zeros_like(z)
         indices_list: list[torch.Tensor] = []
         residuals: list[torch.Tensor] = [z.detach()] if return_residuals else []
+        logits_list: list[torch.Tensor] = [] if return_logits else []
         cb_loss = z.new_zeros(())
         cm_loss = z.new_zeros(())
         for codebook in self.codebooks:
             e_sq = (codebook * codebook).sum(dim=-1)          # (K,)
             logits = 2.0 * remainder @ codebook.t() - e_sq    # (N, K)
+            if return_logits:
+                logits_list.append(logits)
             idx = logits.argmax(dim=-1)
             quantized = codebook[idx]                          # (N, D)
             cb_loss = cb_loss + sq_err(quantized, remainder.detach())
@@ -385,6 +443,7 @@ class ResidualQuantizer(nn.Module):
             "residuals": residuals,
             "cb_loss": cb_loss,
             "cm_loss": cm_loss,
+            "logits": logits_list,
         }
 
     @torch.inference_mode()
@@ -502,9 +561,11 @@ class RQVAE(nn.Module):
         self.beta = beta
         self.codebook_sizes = list(codebook_sizes)
 
-    def forward(self, x: torch.Tensor, return_residuals: bool = False) -> dict:
+    def forward(self, x: torch.Tensor, return_residuals: bool = False,
+                return_logits: bool = False) -> dict:
         z = self.encoder(x)
-        q = self.quantizer(z, return_residuals=return_residuals)
+        q = self.quantizer(z, return_residuals=return_residuals,
+                           return_logits=return_logits)
         # Straight-through estimator: decoder gradient flows to z as-is.
         z_ste = z + (q["quantized_sum"] - z).detach()
         x_hat = self.decoder(z_ste)
@@ -518,6 +579,7 @@ class RQVAE(nn.Module):
             "indices": q["indices"],
             "quantized_sum": q["quantized_sum"],
             "residuals": q["residuals"],
+            "logits": q["logits"],
         }
 
     @torch.inference_mode()
@@ -986,12 +1048,32 @@ def train_rqvae(model: RQVAE, train_loader: DataLoader, val_loader: DataLoader,
                 dead_code_interval: int = DEAD_CODE_FIX_INTERVAL,
                 dead_code_threshold_frac: float = DEAD_CODE_THRESHOLD_FRAC,
                 usage_decay: float = USAGE_DECAY,
-                ae_warmup_epochs: int = AE_WARMUP_EPOCHS) -> RQVAE:
+                ae_warmup_epochs: int = AE_WARMUP_EPOCHS,
+                embeddings: torch.Tensor | None = None,
+                pairs: torch.Tensor | None = None,
+                cl_lambda: float = 0.0,
+                tau: float = DRQ_TAU,
+                pair_batch: int = DRQ_PAIR_BATCH,
+                mi_penalty: float = 0.0) -> RQVAE:
     """Baseline: joint geometry + codebook training through STE, optional dead-code revival.
 
     Optional AE warmup (ae_warmup_epochs > 0) runs reconstruction-only epochs on encoder+decoder
     with the same optimizer first; the LR schedule starts after it, as in the reference script.
+    Optional contrastive term (cl_lambda > 0, the rqvae_cl arm): the same InfoNCE the
+    DRQ arm uses in stage 1, added to the joint loss -- geometry and codebooks are
+    trained TOGETHER, which is exactly what DRQ separates.
+    Optional cross-level MI penalty (mi_penalty > 0, the mi arm): gamma * sum_d
+    I(c_d; c_{d+1}) on soft assignments -- directly penalizes the coupling
+    identified by the permutation control as the collision cause.
     """
+    if cl_lambda > 0 and (pairs is None or embeddings is None):
+        raise ValueError("cl_lambda > 0 needs positive pairs (--drq_pairs)")
+    if mi_penalty > 0:
+        logger.info(f"  cross-level MI penalty ENABLED: gamma={mi_penalty} "
+                    f"(soft-assignment surrogate)")
+    if cl_lambda > 0:
+        logger.info(f"  co-click InfoNCE ENABLED: lambda={cl_lambda}, tau={tau}, "
+                    f"pair_batch={pair_batch}, pairs={int(pairs.shape[0]):,}")
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=WEIGHT_DECAY)
     if ae_warmup_epochs > 0:
         logger.info(f"  AE warmup ENABLED: {ae_warmup_epochs} reconstruction-only epoch(s)")
@@ -1040,8 +1122,21 @@ def train_rqvae(model: RQVAE, train_loader: DataLoader, val_loader: DataLoader,
         for x in train_loader:
             x = x.to(device)
             optimizer.zero_grad(set_to_none=True)
-            out = model(x, return_residuals=reviver is not None)
-            out["loss"].backward()
+            out = model(x, return_residuals=reviver is not None,
+                        return_logits=mi_penalty > 0)
+            loss = out["loss"]
+            if cl_lambda > 0:
+                pi = torch.randint(0, pairs.shape[0], (pair_batch,))
+                xa = embeddings[pairs[pi, 0]].to(device)
+                xb = embeddings[pairs[pi, 1]].to(device)
+                cl = info_nce(model.encoder(xa), model.encoder(xb), tau)
+                loss = loss + cl_lambda * cl
+                running["cl"] += cl.item()
+            if mi_penalty > 0:
+                mi = soft_mi_penalty(out["logits"])
+                loss = loss + mi_penalty * mi
+                running["mi"] += mi.item()
+            loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP)
             optimizer.step()
             scheduler.step()
@@ -1053,17 +1148,22 @@ def train_rqvae(model: RQVAE, train_loader: DataLoader, val_loader: DataLoader,
                     revived_total += n_rev
                     if n_rev:
                         logger.info(f"    [dead-code] step {step}: revived {n_rev} code(s)")
-            running["loss"] += out["loss"].item()
+            running["loss"] += loss.item()
             running["recon"] += out["recon_loss"].item()
             running["cb"] += out["cb_loss"].item()
             running["cm"] += out["cm_loss"].item()
+            cl_str = (f"cl={running['cl'] / max(1, step - epoch * steps_per_epoch):.4f} "
+                      if cl_lambda > 0 else "")
+            mi_str = (f"mi={running['mi'] / max(1, step - epoch * steps_per_epoch):.4f} "
+                      if mi_penalty > 0 else "")
             if step % 100 == 0:
                 p0 = _batch_stage_perplexity(out["indices"], k0, 0)
                 pl = _batch_stage_perplexity(out["indices"], k1, len(model.codebook_sizes) - 1)
                 logger.info(
                     f"    [RQVAE] epoch {epoch + 1}/{epochs} step {step} "
-                    f"loss={out['loss'].item():.4f} cb={out['cb_loss'].item():.4f} "
-                    f"cm={out['cm_loss'].item():.4f} perp0={p0:.1f} perpL={pl:.1f} "
+                    f"loss={loss.item():.4f} cb={out['cb_loss'].item():.4f} "
+                    f"cm={out['cm_loss'].item():.4f} {cl_str}{mi_str}"
+                    f"perp0={p0:.1f} perpL={pl:.1f} "
                     f"lr={scheduler.get_last_lr()[0]:.2e}"
                 )
         val_recon = evaluate_continuous_recon(model, val_loader, device)
@@ -1072,7 +1172,9 @@ def train_rqvae(model: RQVAE, train_loader: DataLoader, val_loader: DataLoader,
             f"  [RQVAE] epoch {epoch + 1}/{epochs} "
             f"loss={running['loss'] / n:.4f} recon={running['recon'] / n:.4f} "
             f"cb={running['cb'] / n:.4f} cm={running['cm'] / n:.4f} "
-            f"val_recon={val_recon:.4f} revived_total={revived_total} ({time.time() - t0:.1f}s)"
+            + (f"cl={running['cl'] / n:.4f} " if cl_lambda > 0 else "")
+            + (f"mi={running['mi'] / n:.4f} " if mi_penalty > 0 else "")
+            + f"val_recon={val_recon:.4f} revived_total={revived_total} ({time.time() - t0:.1f}s)"
         )
     return model
 
@@ -1087,8 +1189,25 @@ def run_rqvae_arm(dataset: EmbeddingDataset, train_idx: np.ndarray, val_idx: np.
     warmup_epochs = args.ae_warmup_epochs if ae_warmup_epochs is None else ae_warmup_epochs
     if name == "warmup":
         logger.info(f"=== Arm 3: AE warmup ({warmup_epochs} recon-only epochs) then joint RQ-VAE ===")
+    elif name == "rqvae_cl":
+        logger.info(f"=== Arm 5: joint RQ-VAE + co-click InfoNCE (lambda={args.rqvae_lambda}) ===")
+    elif name == "mi":
+        gamma = getattr(args, "mi_penalty", 0.0)
+        if gamma <= 0:
+            raise ValueError("arm mi needs --mi_penalty > 0")
+        if len(codebook_sizes) < 2:
+            raise ValueError("arm mi needs >= 2 codebook levels (no adjacent pair)")
+        logger.info(f"=== Arm 6: joint RQ-VAE + cross-level MI penalty (gamma={gamma}) ===")
     else:
         logger.info("=== Arm 1: baseline RQ-VAE (joint training) ===")
+    pairs = None
+    if name == "rqvae_cl":
+        if args.rqvae_lambda <= 0:
+            raise ValueError("arm rqvae_cl needs --rqvae_lambda > 0")
+        pairs = load_positive_pairs(args.drq_pairs, dataset.item_ids, logger) \
+            if args.drq_pairs else None
+        if pairs is None:
+            raise ValueError("--rqvae_lambda > 0 requires --drq_pairs")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = RQVAE(args.input_dim, args.hidden_dim, codebook_sizes, args.beta).to(device)
     train_loader = DataLoader(Subset(dataset, train_idx), batch_size=args.batch_size,
@@ -1101,7 +1220,12 @@ def run_rqvae_arm(dataset: EmbeddingDataset, train_idx: np.ndarray, val_idx: np.
                 ae_warmup_epochs=warmup_epochs,
                 dead_code_interval=args.dead_code_fix_interval,
                 dead_code_threshold_frac=args.dead_code_threshold_frac,
-                usage_decay=args.usage_decay)
+                usage_decay=args.usage_decay,
+                embeddings=dataset.embeddings, pairs=pairs,
+                cl_lambda=getattr(args, "rqvae_lambda", 0.0) if name == "rqvae_cl" else 0.0,
+                tau=getattr(args, "drq_tau", DRQ_TAU),
+                pair_batch=getattr(args, "drq_pair_batch", DRQ_PAIR_BATCH),
+                mi_penalty=getattr(args, "mi_penalty", 0.0) if name == "mi" else 0.0)
     indices = encode_indices_full(model, dataset.embeddings, args.inference_batch_size, device)
     codebooks = [cb.detach().cpu() for cb in model.quantizer.codebooks]
     return {
@@ -1241,8 +1365,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--input_path", type=str, default=DEFAULT_INPUT_PATH,
                    help="parquet or h5 file of precomputed item embeddings")
     p.add_argument("--arm", type=str,
-                   choices=["rqvae", "drq", "warmup", "both", "all"], default="both",
-                   help="rqvae|drq|warmup; both = rqvae+drq; all = rqvae+warmup+drq")
+                   choices=["rqvae", "drq", "warmup", "rqvae_cl", "mi", "both", "all", "cl"],
+                   default="both",
+                   help="rqvae|drq|warmup|rqvae_cl|mi; both = rqvae+drq; "
+                        "all = rqvae+warmup+drq; cl = rqvae+rqvae_cl (pair the co-"
+                        "click arm against its baseline)")
     p.add_argument("--output_dir", type=str, default="drq_vs_rqvae_out")
     p.add_argument("--run_name", type=str, default=None)
 
@@ -1272,6 +1399,12 @@ def parse_args() -> argparse.Namespace:
                    help=".parquet/.csv with columns item_a,item_b (positive pairs)")
     p.add_argument("--drq_tau", type=float, default=DRQ_TAU)
     p.add_argument("--drq_pair_batch", type=int, default=DRQ_PAIR_BATCH)
+    p.add_argument("--rqvae_lambda", type=float, default=RQVAE_CL_LAMBDA,
+                   help="rqvae_cl arm: weight of the co-click InfoNCE added to the joint "
+                        "RQ-VAE loss (shares --drq_pairs/--drq_tau/--drq_pair_batch)")
+    p.add_argument("--mi_penalty", type=float, default=MI_PENALTY_DEFAULT,
+                   help="mi arm: weight gamma of the cross-level soft-assignment MI "
+                        "penalty added to the joint RQ-VAE loss (0 = off)")
     p.add_argument("--kmeans_n_init", type=int, default=KMEANS_N_INIT,
                    help="k-means restarts (nredo for faiss, n_init for sklearn)")
     p.add_argument("--kmeans_niter", type=int, default=KMEANS_NITER)
@@ -1325,6 +1458,8 @@ def main() -> None:
         arms = ["rqvae", "drq"]
     elif args.arm == "all":
         arms = ["rqvae", "warmup", "drq"]
+    elif args.arm == "cl":
+        arms = ["rqvae", "rqvae_cl"]
     else:
         arms = [args.arm]
     results: dict[str, dict] = {}
@@ -1336,6 +1471,12 @@ def main() -> None:
         elif arm == "warmup":
             res = run_rqvae_arm(dataset, train_idx, val_idx, codebook_sizes, args, logger,
                                 name="warmup", ae_warmup_epochs=args.warmup_arm_epochs)
+        elif arm == "rqvae_cl":
+            res = run_rqvae_arm(dataset, train_idx, val_idx, codebook_sizes, args, logger,
+                                name="rqvae_cl")
+        elif arm == "mi":
+            res = run_rqvae_arm(dataset, train_idx, val_idx, codebook_sizes, args, logger,
+                                name="mi")
         else:
             res = run_drq_arm(dataset, train_idx, val_idx, codebook_sizes, args, logger)
         results[arm] = res
@@ -1385,10 +1526,12 @@ def main() -> None:
         "rqvae": os.path.join(out_dir, "arm_rqvae_diagnostics.json"),
         "warmup": os.path.join(out_dir, "arm_warmup_diagnostics.json"),
         "drq": os.path.join(out_dir, "arm_drq_diagnostics.json"),
+        "rqvae_cl": os.path.join(out_dir, "arm_rqvae_cl_diagnostics.json"),
+        "mi": os.path.join(out_dir, "arm_mi_diagnostics.json"),
     }
     if os.path.exists(diag_files["rqvae"]):
         base_diag = json.load(open(diag_files["rqvae"]))
-        for cand in ("warmup", "drq"):
+        for cand in ("warmup", "drq", "rqvae_cl", "mi"):
             if not os.path.exists(diag_files[cand]):
                 continue
             cand_diag = json.load(open(diag_files[cand]))
