@@ -59,6 +59,21 @@ def lattice_candidates(k):
     spacing = np.mean([axes[d][1] - axes[d][0] for d in range(3)])
     return G, spacing, axes
 
+
+def draw_grid_lines(ax, axes, color="#94a3b8", lw=0.45, alpha=0.22):
+    """Draw orthogonal wireframe grid lines to emphasize the rigid 3D lattice."""
+    xs, ys, zs = axes
+    for x in xs:
+        for y in ys:
+            ax.plot([x, x], [y, y], [zs[0], zs[-1]], color=color, lw=lw, alpha=alpha, zorder=0)
+    for x in xs:
+        for z in zs:
+            ax.plot([x, x], [ys[0], ys[-1]], [z, z], color=color, lw=lw, alpha=alpha, zorder=0)
+    for y in ys:
+        for z in zs:
+            ax.plot([xs[0], xs[-1]], [y, y], [z, z], color=color, lw=lw, alpha=alpha, zorder=0)
+
+
 def nearest(points, centers):
     d2 = ((points[:, None, :] - centers[None, :, :]) ** 2).sum(-1)
     return d2.argmin(1), np.sqrt(d2.min(1))
@@ -69,7 +84,7 @@ def stats(labels, n_codes):
     return counts, (counts - 1).clip(min=0).sum() / len(labels)
 
 
-G, spacing = lattice_candidates(N_CODES)
+G, spacing, axes = lattice_candidates(N_CODES)
 K = KMeans(N_CODES, n_init=3, random_state=0, max_iter=300, tol=1e-2).fit(
     X
 ).cluster_centers_
@@ -100,10 +115,10 @@ def pts(ax, P, c, s, a):
 
 
 def codes(ax, counts, C):
-    pts(ax, C[counts == 0], "#cbd5e0", 7, 0.12)
-    pts(ax, C[(counts >= 1) & (counts <= 2)], "#3182ce", 13, 0.9)
+    pts(ax, C[counts == 0], "#94a3b8", 8, 0.28)
+    pts(ax, C[(counts >= 1) & (counts <= 2)], "#3182ce", 14, 0.95)
     hot = counts > 2
-    pts(ax, C[hot], "#e53e3e", 6 + 4 * np.sqrt(counts[hot]), 0.9)
+    pts(ax, C[hot], "#e53e3e", 7 + 4 * np.sqrt(counts[hot]), 0.95)
 
 
 ax = panel("(a) the data: curved, anisotropic, clumped",
@@ -114,6 +129,7 @@ pts(ax, X, "#2b6cb0", 6, 0.55)
 ax = panel("(b) RQ-VAE: candidates form a rigid grid",
            f"grid aligned to the axes, not the manifold: only {reachable}/{len(G)} sites\n"
            f"sit near the sheet; {g_collide*100:.0f}% of items lose their ID; snap error {gerr.mean():.2f}")
+draw_grid_lines(ax, axes)
 pts(ax, X, "#a0aec0", 3, 0.25)
 codes(ax, g_counts, G)
 
@@ -125,7 +141,7 @@ codes(ax, k_counts, K)
 
 handles = [
     Line2D([], [], marker="o", ls="", ms=5, color="#a0aec0", label="item embeddings"),
-    Line2D([], [], marker="o", ls="", ms=5, color="#cbd5e0", label="code, no item nearby"),
+    Line2D([], [], marker="o", ls="", ms=5, color="#94a3b8", label="code, no item nearby"),
     Line2D([], [], marker="o", ls="", ms=7, color="#3182ce", label="code, 1-2 items"),
     Line2D([], [], marker="o", ls="", ms=10, color="#e53e3e", label="collision bucket (3+ items)"),
 ]
